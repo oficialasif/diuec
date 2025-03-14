@@ -1,30 +1,45 @@
-import { useAuth } from "@/contexts/auth-context"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+'use client'
 
-interface ProtectedRouteProps {
-  children: React.ReactNode
-}
+import { useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useAuth } from '@/contexts/auth-context'
+import { toast } from 'react-hot-toast'
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const publicRoutes = ['/', '/auth/login', '/auth/signup']
+const authRoutes = ['/auth/login', '/auth/signup']
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login")
-    }
-  }, [user, loading, router])
+    if (!loading) {
+      // If the route is an auth route and user is logged in, redirect to dashboard
+      if (user && authRoutes.includes(pathname)) {
+        router.replace('/dashboard')
+        return
+      }
 
+      // If the route is protected and user is not logged in, redirect to login
+      if (!user && !publicRoutes.includes(pathname)) {
+        toast.error('Please sign in to access this page')
+        router.replace('/')
+        return
+      }
+    }
+  }, [user, loading, pathname, router])
+
+  // Show nothing while checking auth
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-gray-900"></div>
-      </div>
-    )
+    return null
   }
 
-  if (!user) {
+  // If on auth route and logged in, or on protected route and not logged in, show nothing
+  if (
+    (user && authRoutes.includes(pathname)) ||
+    (!user && !publicRoutes.includes(pathname))
+  ) {
     return null
   }
 

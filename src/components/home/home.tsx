@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { MessageSquare, Heart, Share2, Send, X } from "lucide-react"
+import { MessageSquare, Heart, Share2, Send } from "lucide-react"
 import PhotoGallery from './PhotoGallery'
+import { AuthModal } from "@/components/auth/auth"
+import { useAuth } from '@/contexts/auth-context'
 
 // Typewriter Effect Component
 const TypewriterEffect = () => {
@@ -61,43 +62,30 @@ const TypewriterEffect = () => {
   )
 }
 
-// Navigation Links
-const navLinks = [
-  { name: "COMMUNITY", href: "/community", current: false },
-  { name: "TOURNAMENTS", href: "/tournaments", current: false },
-  { name: "TEAMS", href: "/teams", current: false },
-  { name: "ABOUT", href: "/about", current: false },
-]
-
-// Tournament Links
-const tournamentLinks = [
-  { name: "PUBG", href: "/tournaments/pubg", current: false },
-  { name: "FREE FIRE", href: "/tournaments/free-fire", current: false },
-  { name: "FOOTBALL", href: "/tournaments/football", current: false },
-  { name: "VALORANT", href: "/tournaments/valorant", current: false },
-  { name: "CS2", href: "/tournaments/cs2", current: false },
-]
-
-// Banner Data
-const banners = [
-  {
-    id: 1,
-    title: "E-FOOTBALL TOURNAMENT SEASON-3",
-    date: "Coming soon...",
-    status: "Diu eSports Community",
-    image: "/images/posts/efootball.png",
-    link: "/tournaments/football"
-  }
-]
-
 // Sponsors Data
 const sponsors = [
-  { name: "Razer", logo: "/images/sponsors/razer.png" },
-  { name: "Logitech", logo: "/images/sponsors/logitech.png" },
-  { name: "SteelSeries", logo: "/images/sponsors/steelseries.png" },
-  { name: "MSI", logo: "/images/sponsors/msi.png" },
-  { name: "ASUS ROG", logo: "/images/sponsors/asus-rog.png" },
-  { name: "HyperX", logo: "/images/sponsors/hyperx.png" },
+  { name: "Sponsor 1", logo: "/images/sponsors/logo-green.png" },
+  { name: "Sponsor 2", logo: "/images/sponsors/logo-pink.png" },
+  { name: "Sponsor 3", logo: "/images/sponsors/logo-green-splash.png" },
+] as const
+
+// Founders Data
+const founders = [
+  {
+    name: "Founder",
+    role: "CEO & Founder",
+    image: "/images/founder/founder.jpg"
+  },
+  {
+    name: "Co-Founder",
+    role: "CTO & Co-Founder",
+    image: "/images/founder/co founder.jpg"
+  },
+  {
+    name: "Associate Co-Founder",
+    role: "COO & Associate Co-Founder",
+    image: "/images/founder/acofoinder.jpg"
+  }
 ]
 
 // Posts Data
@@ -183,12 +171,8 @@ const initialPosts = [
 ]
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { user, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [username, setUsername] = useState("")
   const [posts, setPosts] = useState(initialPosts)
   const [counts, setCounts] = useState({
     members: 0,
@@ -310,199 +294,19 @@ export default function Home() {
     })
   }
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          username,
-          isSignUp,
-        }),
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        setIsLoggedIn(true)
-        setShowAuthModal(false)
-        setEmail("")
-        setPassword("")
-        setUsername("")
-      } else {
-        throw new Error(data.error || 'Authentication failed')
-      }
-    } catch (error) {
-      console.error("Authentication error:", error)
-      // Here you would typically show an error message to the user
-    }
+  const handleLogin = () => {
+    // Handle successful login
+    setShowAuthModal(false)
   }
-
-  const AuthModal = () => (
-    <AnimatePresence>
-      {showAuthModal && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowAuthModal(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-black/95 p-8 rounded-xl border border-violet-500/20 w-full max-w-md relative"
-          >
-            <button
-              onClick={() => setShowAuthModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-white"
-            >
-              <X size={20} />
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent">
-              {isSignUp ? "Create Account" : "Welcome Back"}
-            </h2>
-            
-            <form className="space-y-4" onSubmit={handleAuth}>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-black border border-violet-500/20 text-white focus:outline-none focus:border-violet-500"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-              
-              {isSignUp && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Username</label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg bg-black border border-violet-500/20 text-white focus:outline-none focus:border-violet-500"
-                    placeholder="Choose a username"
-                    required
-                  />
-                </div>
-              )}
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-black border border-violet-500/20 text-white focus:outline-none focus:border-violet-500"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-lg transition-colors"
-              >
-                {isSignUp ? "Sign Up" : "Sign In"}
-              </Button>
-            </form>
-            
-            <div className="mt-4 text-center">
-              <button
-                className="text-violet-400 hover:text-violet-300 text-sm"
-                onClick={() => setIsSignUp(!isSignUp)}
-              >
-                {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-violet-950/20 text-white">
-      <AuthModal />
-      {/* Fixed Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-sm border-b border-violet-500/20">
-        <nav className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent">DIU ESPORTS</h1>
-            </Link>
-            
-            <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <div key={link.name} className="relative group">
-                  <Link 
-                    href={link.name === "TOURNAMENTS" ? "/tournaments" : `/${link.name.toLowerCase()}`}
-                    className="text-sm font-medium text-gray-300 hover:text-violet-400 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                  {link.name === "TOURNAMENTS" && (
-                    <div className="absolute left-0 mt-2 w-48 bg-black/95 rounded-md shadow-lg overflow-hidden z-20 transform scale-0 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all duration-300 origin-top border border-violet-500/20">
-                      <div className="py-2">
-                        {tournamentLinks.map((tournament) => (
-                          <Link
-                            key={tournament.name}
-                            href={tournament.href}
-                            className="block px-4 py-2 text-sm text-gray-300 hover:bg-violet-600 hover:text-white transition-colors"
-                          >
-                            {tournament.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {isLoggedIn && (
-                <>
-                  <Link href="/dashboard" className="text-sm font-medium text-gray-300 hover:text-violet-400 transition-colors">
-                    DASHBOARD
-                  </Link>
-                  <Link href="/chat" className="text-sm font-medium text-gray-300 hover:text-violet-400 transition-colors">
-                    CHAT
-                  </Link>
-                </>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4">
-              {isLoggedIn ? (
-                <Button
-                  variant="outline"
-                  className="rounded-full border-violet-500 text-violet-400 hover:bg-violet-500 hover:text-white transition-all duration-300"
-                  onClick={() => setIsLoggedIn(false)}
-                >
-                  SIGN OUT
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="rounded-full border-violet-500 text-violet-400 hover:bg-violet-500 hover:text-white transition-all duration-300"
-                  onClick={() => setShowAuthModal(true)}
-                >
-                  SIGN IN
-                </Button>
-              )}
-            </div>
-          </div>
-        </nav>
-      </header>
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
+      />
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center text-center px-4">
@@ -523,9 +327,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Banner Section */}
-     
 
       <PhotoGallery />
 
@@ -662,99 +463,62 @@ export default function Home() {
         </div>
       </section>
 
-      
-
-      {/* Founder Section */}
-      <section className="py-20 bg-black">
+      {/* Sponsors Section */}
+      <section className="py-16 bg-black/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center text-white">OUR FOUNDERS</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col items-center space-y-4"
-            >
-              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
-                <Image
-                  src="/images/avatars/default-avatar.png"
-                  alt="Alex Chen"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-white">Alex Chen</h3>
-              <p className="text-violet-400 font-medium">President</p>
-              <p className="text-gray-400 text-center">
-                Competitive Valorant player with 5 years of tournament experience.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-col items-center space-y-4"
-            >
-              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
-                <Image
-                  src="/images/avatars/default-avatar.png"
-                  alt="Sarah Kim"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-white">Sarah Kim</h3>
-              <p className="text-violet-400 font-medium">Vice President</p>
-              <p className="text-gray-400 text-center">
-                Former professional League of Legends player and team manager.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex flex-col items-center space-y-4"
-            >
-              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
-                <Image
-                  src="/images/avatars/default-avatar.png"
-                  alt="Michael Wong"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-white">Michael Wong</h3>
-              <p className="text-violet-400 font-medium">Tournament Director</p>
-              <p className="text-gray-400 text-center">
-                Organized over 50 esports events across multiple universities.
-              </p>
-            </motion.div>
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Our Sponsors</h2>
+          <div className="sponsor-scroll-container">
+            <div className="sponsor-scroll-track">
+              {[...Array(2)].map((_, groupIndex) => (
+                <div key={`group-${groupIndex}`} className="flex gap-24">
+                  {sponsors.map((sponsor, index) => (
+                    <motion.div
+                      key={`${sponsor.name}-${groupIndex}-${index}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="sponsor-logo"
+                    >
+                      <Image
+                        src={sponsor.logo}
+                        alt={sponsor.name}
+                        fill
+                        className="object-contain p-2"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Sponsors Section */}
-      <section className="py-20 bg-black overflow-hidden">
+      {/* Founders Section */}
+      <section className="py-16 bg-black">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center text-white">OUR SPONSORS</h2>
-          <div className="relative">
-            <div className="sponsor-scroll-container">
-              <div className="sponsor-scroll-track">
-                {[...sponsors, ...sponsors].map((sponsor, i) => (
-                  <div key={i} className="mx-8 flex-shrink-0">
-                    <Image
-                      src={sponsor.logo}
-                      alt={sponsor.name}
-                      width={120}
-                      height={60}
-                      className="opacity-70 hover:opacity-100 transition-opacity"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Meet Our Founders</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {founders.map((founder, index) => (
+              <motion.div
+                key={founder.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.2 }}
+                className="text-center"
+              >
+                <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-violet-500">
+                  <Image
+                    src={founder.image}
+                    alt={founder.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-violet-200 mb-2">{founder.name}</h3>
+                <p className="text-gray-400">{founder.role}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

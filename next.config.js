@@ -9,7 +9,10 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    domains: [
+      'lh3.googleusercontent.com',  // For Google authentication profile pictures
+      'firebasestorage.googleapis.com'  // For Firebase Storage images (if you use it)
+    ],
   },
 }
 
