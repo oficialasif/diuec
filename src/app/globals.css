@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.sponsor-scroll-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 0;
+}
+
+.sponsor-scroll-track {
+  display: flex;
+  animation: scroll 30s linear infinite;
+  width: fit-content;
+}
+
+.sponsor-scroll-track:hover {
+  animation-play-state: paused;
+}

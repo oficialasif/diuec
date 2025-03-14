@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/auth-context";
+import Footer from "@/components/layout/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,10 +27,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-black text-white`}>
+      <body suppressHydrationWarning className={`${inter.className} min-h-screen bg-black text-white`}>
         <Providers>
           <AuthProvider>
             {children}
+            <Footer />
             <Toaster position="bottom-right" />
           </AuthProvider>
         </Providers>

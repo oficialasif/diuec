@@ -6,6 +6,7 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { MessageSquare, Heart, Share2, Send, X } from "lucide-react"
+import PhotoGallery from './PhotoGallery'
 
 // Typewriter Effect Component
 const TypewriterEffect = () => {
@@ -40,19 +41,22 @@ const TypewriterEffect = () => {
 
   return (
     <div className="inline-flex items-center min-h-[80px] md:min-h-[100px]">
-      <motion.span
-        className="text-violet-500 inline-block min-w-[300px] text-left text-6xl md:text-8xl font-extrabold"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {currentText}
+      <div className="flex flex-col items-start gap-4">
+        
         <motion.span
-          className="inline-block w-[4px] h-[60px] md:h-[80px] bg-violet-500 ml-2"
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
-        />
-      </motion.span>
+          className="text-violet-500 inline-block min-w-[300px] text-left text-6xl md:text-8xl font-extrabold"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {currentText}
+          <motion.span
+            className="inline-block w-[4px] h-[60px] md:h-[80px] bg-violet-500 ml-2"
+            animate={{ opacity: [1, 0] }}
+            transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+          />
+        </motion.span>
+      </div>
     </div>
   )
 }
@@ -501,88 +505,29 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center pt-16 bg-transparent">
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div
+      <section className="relative h-screen flex items-center justify-center text-center px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl md:text-4xl font-bold text-violet-500 mb-4"
           >
-            <div className="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-violet-800 to-violet-600 text-xs font-medium mb-6">
-              INTRODUCING DIU ESPORTS
-            </div>
-            <h2 className="text-6xl md:text-8xl font-extrabold leading-tight tracking-tighter mb-8">
-              GAMING FOR
-              <br />
-              <TypewriterEffect />
-            </h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto"
-            >
-              Join the largest university gaming community. Compete in tournaments,
-              connect with fellow gamers, and rise to glory.
-            </motion.p>
-          </motion.div>
+            <span className="bg-violet-500 text-white text-sm font-medium px-3 py-1 rounded-full">
+              INTRODUCING
+            </span>
+          </motion.h1>
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <h1 className="text-7xl md:text-7xl font-bold text-white">GAMING FOR</h1>
+            <TypewriterEffect />
+          </div>
         </div>
       </section>
 
-      {/* Banner Carousel Section */}
-      <section className="py-16 bg-black overflow-hidden">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="relative h-[300px] md:h-[400px] lg:h-[500px] w-full max-w-[1128px] mx-auto overflow-hidden rounded-lg border border-violet-500/20"
-          >
-            {/* Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent z-10" />
+      {/* Banner Section */}
+     
 
-            {/* Banners */}
-            {banners.map((banner) => (
-              <motion.div
-                key={banner.id}
-                className="absolute inset-0"
-                initial={{ opacity: 0, scale: 1.1 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1 }}
-              >
-                <Image
-                  src={banner.image}
-                  alt={banner.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </motion.div>
-            ))}
-
-            {/* Content */}
-            <div className="relative z-20 h-full flex flex-col justify-center p-8 md:p-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="inline-block px-3 py-1 rounded-full bg-violet-500/20 text-violet-400 text-sm mb-4">
-                  {banners[0].date}
-                </div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                  {banners[0].title}
-                </h2>
-                <p className="text-xl text-gray-300 mb-8">{banners[0].status}</p>
-                <Link href={banners[0].link}>
-                  <Button className="bg-violet-600 hover:bg-violet-700">
-                    Learn More
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <PhotoGallery />
 
       {/* Statistics Counter Section */}
       <section className="py-16 bg-black">
@@ -608,7 +553,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Posts Section */}
+      {/* Latest Updates Section */}
       <section className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center">LATEST UPDATES</h2>
@@ -717,13 +662,86 @@ export default function Home() {
         </div>
       </section>
 
+      
+
+      {/* Founder Section */}
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-12 text-center text-white">OUR FOUNDERS</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center space-y-4"
+            >
+              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
+                <Image
+                  src="/images/avatars/default-avatar.png"
+                  alt="Alex Chen"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-white">Alex Chen</h3>
+              <p className="text-violet-400 font-medium">President</p>
+              <p className="text-gray-400 text-center">
+                Competitive Valorant player with 5 years of tournament experience.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col items-center space-y-4"
+            >
+              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
+                <Image
+                  src="/images/avatars/default-avatar.png"
+                  alt="Sarah Kim"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-white">Sarah Kim</h3>
+              <p className="text-violet-400 font-medium">Vice President</p>
+              <p className="text-gray-400 text-center">
+                Former professional League of Legends player and team manager.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="flex flex-col items-center space-y-4"
+            >
+              <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/50">
+                <Image
+                  src="/images/avatars/default-avatar.png"
+                  alt="Michael Wong"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-white">Michael Wong</h3>
+              <p className="text-violet-400 font-medium">Tournament Director</p>
+              <p className="text-gray-400 text-center">
+                Organized over 50 esports events across multiple universities.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Sponsors Section */}
       <section className="py-20 bg-black overflow-hidden">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">OUR SPONSORS</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center text-white">OUR SPONSORS</h2>
           <div className="relative">
             <div className="sponsor-scroll-container">
-              <div className="sponsor-scroll-track flex animate-scroll">
+              <div className="sponsor-scroll-track">
                 {[...sponsors, ...sponsors].map((sponsor, i) => (
                   <div key={i} className="mx-8 flex-shrink-0">
                     <Image
