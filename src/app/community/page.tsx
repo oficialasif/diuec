@@ -10,6 +10,7 @@ import { Input } from '@/components/shared/ui/input'
 import { MessageSquare, Heart, Share2, Send } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { getValidImageUrl } from '@/lib/utils/image'
 
 interface Post {
   id: string
@@ -197,12 +198,6 @@ export default function CommunityPage() {
     return date.toLocaleDateString()
   }
 
-  const getValidImageUrl = (url: string | null | undefined) => {
-    if (!url) return '/images/avatars/default-avatar.png'
-    if (url.startsWith('data:')) return '/images/avatars/default-avatar.png'
-    return url
-  }
-
   return (
     <div className="min-h-screen bg-black text-white pt-20 pb-8 px-4 md:px-0">
       <div className="container mx-auto max-w-3xl">
@@ -285,41 +280,15 @@ export default function CommunityPage() {
                 {post.imageUrl && (
                   <div className="relative w-full h-64 mb-4 rounded-lg overflow-hidden">
                     <Image
-                      src={post.imageUrl}
-                      alt="Post image"
+                      src={getValidImageUrl(post.imageUrl, 'post')}
+                      alt={post.title || "Post image"}
                       fill
                       className="object-cover"
+                      priority={false}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                 )}
-
-                {/* Post Actions */}
-                <div className="flex items-center gap-6 mb-4">
-                  <button
-                    onClick={() => handleLike(post.id)}
-                    className={`flex items-center gap-2 transition-colors ${
-                      user && Array.isArray(post.likes) && post.likes.includes(user.uid)
-                        ? 'text-red-500'
-                        : 'text-gray-400 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart 
-                      className={`w-5 h-5 ${
-                        user && Array.isArray(post.likes) && post.likes.includes(user.uid) 
-                          ? 'fill-current' 
-                          : ''
-                      }`} 
-                    />
-                    <span>{Array.isArray(post.likes) ? post.likes.length : 0}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-400">
-                    <MessageSquare className="w-5 h-5" />
-                    <span>{post.comments.length}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-400">
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                </div>
 
                 {/* Comments */}
                 <div className="space-y-4">
@@ -327,10 +296,11 @@ export default function CommunityPage() {
                     <div key={comment.id} className="flex gap-3">
                       <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                         <Image
-                          src={getValidImageUrl(comment.userAvatar)}
-                          alt={comment.userName}
+                          src={getValidImageUrl(comment.userAvatar, 'avatar')}
+                          alt={comment.userName || "User avatar"}
                           fill
                           className="object-cover"
+                          sizes="32px"
                         />
                       </div>
                       <div className="flex-1 bg-violet-900/20 rounded-lg p-3">
@@ -351,10 +321,11 @@ export default function CommunityPage() {
                   <div className="flex gap-3">
                     <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                       <Image
-                        src={getValidImageUrl(user ? userProfile?.photoURL : undefined)}
+                        src={getValidImageUrl(user ? userProfile?.photoURL : undefined, 'avatar')}
                         alt="User avatar"
                         fill
                         className="object-cover"
+                        sizes="32px"
                       />
                     </div>
                     <div className="flex-1 flex gap-2">
@@ -385,17 +356,39 @@ export default function CommunityPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Like, Comment, Share buttons */}
+                <div className="flex gap-6">
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    className={`flex items-center gap-2 transition-colors ${
+                      user && Array.isArray(post.likes) && post.likes.includes(user.uid)
+                        ? 'text-red-500'
+                        : 'text-gray-400 hover:text-red-500'
+                    }`}
+                  >
+                    <Heart 
+                      className={`w-5 h-5 ${
+                        user && Array.isArray(post.likes) && post.likes.includes(user.uid) 
+                          ? 'fill-current' 
+                          : ''
+                      }`} 
+                    />
+                    <span>{Array.isArray(post.likes) ? post.likes.length : 0}</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-gray-400">
+                    <MessageSquare className="w-5 h-5" />
+                    <span>{post.comments.length}</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-gray-400">
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
               </motion.div>
             ))}
-
-            {posts.length === 0 && (
-              <p className="text-center text-gray-400 py-8">
-                No posts yet. Be the first to share something!
-              </p>
-            )}
           </div>
         )}
       </div>
     </div>
   )
-} 
+}

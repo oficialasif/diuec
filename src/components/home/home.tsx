@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { MessageSquare, Heart, Share2, Send } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import { MessageSquare, Heart, Share2, Send } from "lucide-react"
 import PhotoGallery from './PhotoGallery'
 import { AuthModal } from "@/components/auth/auth"
 import { useAuth } from '@/contexts/auth-context'
+import LatestUpdates from './LatestUpdates'
 
 // Typewriter Effect Component
 const TypewriterEffect = () => {
@@ -88,92 +89,9 @@ const founders = [
   }
 ]
 
-// Posts Data
-const initialPosts = [
-  {
-    id: 1,
-    title: "Valorant Tournament Finals",
-    content: "The finals were intense with Team Phoenix taking the championship after a nail-biting overtime on Haven.",
-    author: {
-      name: "Admin",
-      avatar: "/images/avatars/admin.png",
-    },
-    date: "2025-03-10T14:30:00",
-    likes: 124,
-    liked: false,
-    comments: [
-      {
-        id: 1,
-        user: {
-          name: "GamerPro",
-          avatar: "/images/avatars/user1.png",
-        },
-        text: "That overtime was insane! Best match I've seen all year.",
-        date: "2025-03-10T15:45:00",
-      },
-    ],
-    showComments: false,
-    commentText: "",
-    shares: 18,
-  },
-  {
-    id: 2,
-    title: "Free Fire Championship Registration Open",
-    content: "Register your team for the upcoming Free Fire championship. Limited slots available!",
-    author: {
-      name: "Sarah Rahman",
-      avatar: "/images/avatars/user2.png",
-    },
-    date: "2025-03-09T10:15:00",
-    likes: 89,
-    liked: false,
-    comments: [
-      {
-        id: 1,
-        user: {
-          name: "FireFighter",
-          avatar: "/images/avatars/user3.png",
-        },
-        text: "Can't wait to participate! When is the deadline?",
-        date: "2025-03-09T11:30:00",
-      },
-    ],
-    showComments: false,
-    commentText: "",
-    shares: 42,
-  },
-  {
-    id: 3,
-    title: "eFootball Workshop This Weekend",
-    content: "Join us for an intensive eFootball workshop this weekend. Learn pro tips and strategies!",
-    author: {
-      name: "Coach Mike",
-      avatar: "/images/avatars/user4.png",
-    },
-    date: "2025-03-08T09:20:00",
-    likes: 156,
-    liked: false,
-    comments: [
-      {
-        id: 1,
-        user: {
-          name: "SoccerPro",
-          avatar: "/images/avatars/user5.png",
-        },
-        text: "Will there be 1-on-1 coaching sessions?",
-        date: "2025-03-08T10:15:00",
-      },
-    ],
-    showComments: false,
-    commentText: "",
-    shares: 27,
-  },
-]
-
 export default function Home() {
   const { user, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [posts, setPosts] = useState(initialPosts)
   const [counts, setCounts] = useState({
     members: 0,
     tournaments: 0,
@@ -181,7 +99,6 @@ export default function Home() {
     games: 0,
   })
 
-  // Animated counter for statistics
   useEffect(() => {
     const interval = setInterval(() => {
       setCounts((prev) => {
@@ -207,101 +124,12 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
-  // Post interaction functions
-  const toggleLike = (postId: number) => {
-    setPosts(
-      posts.map((post) => {
-        if (post.id === postId) {
-          const newLiked = !post.liked
-          return {
-            ...post,
-            liked: newLiked,
-            likes: newLiked ? post.likes + 1 : post.likes - 1,
-          }
-        }
-        return post
-      })
-    )
-  }
-
-  const toggleComments = (postId: number) => {
-    setPosts(
-      posts.map((post) => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            showComments: !post.showComments,
-          }
-        }
-        return post
-      })
-    )
-  }
-
-  const updateCommentText = (postId: number, text: string) => {
-    setPosts(
-      posts.map((post) => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            commentText: text,
-          }
-        }
-        return post
-      })
-    )
-  }
-
-  const addComment = (postId: number) => {
-    setPosts(
-      posts.map((post) => {
-        if (post.id === postId && post.commentText.trim()) {
-          const newComment = {
-            id: post.comments.length + 1,
-            user: {
-              name: "You",
-              avatar: "/images/avatars/you.png",
-            },
-            text: post.commentText,
-            date: new Date().toISOString(),
-          }
-
-          return {
-            ...post,
-            comments: [...post.comments, newComment],
-            commentText: "",
-          }
-        }
-        return post
-      })
-    )
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-    if (diffInSeconds < 60) return "Just now"
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
-    
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  }
-
   const handleLogin = () => {
-    // Handle successful login
     setShowAuthModal(false)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-violet-950/20 text-white">
-      {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
@@ -354,114 +182,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Updates Section */}
-      <section className="py-20 bg-black">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">LATEST UPDATES</h2>
-          <div className="space-y-12">
-            {posts.map((post) => (
-              <div key={post.id} className="border-b border-gray-800 pb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                    <Image
-                      src={post.author.avatar}
-                      alt={post.author.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{post.author.name}</p>
-                    <p className="text-xs text-gray-400">{formatDate(post.date)}</p>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold mb-2">{post.title}</h3>
-                  <p className="text-gray-300">{post.content}</p>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  <button
-                    className={`flex items-center gap-2 ${post.liked ? "text-red-500" : "text-gray-400"} hover:text-red-500 transition-colors`}
-                    onClick={() => toggleLike(post.id)}
-                  >
-                    <Heart className={`h-5 w-5 ${post.liked ? "fill-current" : ""}`} />
-                    <span>{post.likes}</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-2 text-gray-400 hover:text-purple-400 transition-colors"
-                    onClick={() => toggleComments(post.id)}
-                  >
-                    <MessageSquare className="h-5 w-5" />
-                    <span>{post.comments.length}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-400 hover:text-purple-400 transition-colors">
-                    <Share2 className="h-5 w-5" />
-                    <span>{post.shares}</span>
-                  </button>
-                </div>
-
-                {post.showComments && (
-                  <div className="mt-6 space-y-4">
-                    {post.comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-3">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                          <Image
-                            src={comment.user.avatar}
-                            alt={comment.user.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="bg-gray-900 p-3 rounded-lg flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="text-sm font-medium">{comment.user.name}</p>
-                            <p className="text-xs text-gray-500">{formatDate(comment.date)}</p>
-                          </div>
-                          <p className="text-sm text-gray-300">{comment.text}</p>
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="flex gap-3 mt-4">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                        <Image
-                          src="/images/avatars/you.png"
-                          alt="Your Avatar"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 flex gap-2">
-                        <input
-                          type="text"
-                          className="flex-1 bg-gray-900 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          placeholder="Write a comment..."
-                          value={post.commentText}
-                          onChange={(e) => updateCommentText(post.id, e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              addComment(post.id)
-                            }
-                          }}
-                        />
-                        <Button
-                          size="icon"
-                          className="rounded-full bg-purple-600 hover:bg-purple-700 h-8 w-8"
-                          onClick={() => addComment(post.id)}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Latest Updates */}
+      <LatestUpdates />
 
       {/* Sponsors Section */}
       <section className="py-16 bg-black/50 backdrop-blur-sm">

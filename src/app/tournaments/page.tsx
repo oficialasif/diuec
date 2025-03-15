@@ -9,6 +9,7 @@ import { Button } from '@/components/shared/ui/button'
 import { Trophy, Users, Calendar, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { getValidImageUrl } from '@/lib/utils/image'
 
 interface Tournament {
   id: string
@@ -142,7 +143,7 @@ export default function TournamentsPage() {
               >
                 <div className="relative h-48">
                   <Image
-                    src={tournament.image}
+                    src={getValidImageUrl(tournament.image, 'tournament')}
                     alt={tournament.title}
                     fill
                     className="object-cover"

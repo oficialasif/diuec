@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -32,15 +31,13 @@ export default function RootLayout({
       <body suppressHydrationWarning className={`${inter.className} min-h-screen bg-black text-white`}>
         <Providers>
           <AuthProvider>
-            <ProtectedRoute>
-              <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-grow mt-16">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </ProtectedRoute>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow mt-16">
+                {children}
+              </main>
+              <Footer />
+            </div>
             <Toaster position="top-center" />
           </AuthProvider>
         </Providers>
