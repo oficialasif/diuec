@@ -5,14 +5,17 @@ import { useAuth } from '@/contexts/auth-context'
 import { motion } from 'framer-motion'
 import { collection, addDoc, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { Button } from '@/components/shared/ui/button'
-import { Input } from '@/components/shared/ui/input'
-import { Textarea } from '@/components/shared/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Image as ImageIcon, Send, Trophy, Bell } from 'lucide-react'
 import toast from 'react-hot-toast'
+import PhotoGallery from '@/components/home/PhotoGallery'
+import { UserStats } from '@/components/dashboard/UserStats'
+import { AdminControls } from '@/components/dashboard/AdminControls'
 
-export default function DashboardPage() {
-  const { user, userProfile } = useAuth()
+export default function Dashboard() {
+  const { user, userProfile, isAdmin } = useAuth()
   const [registeredTournaments, setRegisteredTournaments] = useState(0)
   const [postContent, setPostContent] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -97,93 +100,57 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pt-20 pb-8 px-4 md:px-0">
-      <div className="container mx-auto max-w-6xl">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-violet-900/50 to-violet-600/30 rounded-lg p-6 mb-8"
-        >
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {userProfile?.displayName}! 👋
-          </h1>
-          <p className="text-violet-200">
-            Ready to dominate the gaming scene? Let's check out what's happening today.
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-white mb-8">
+          Welcome, {userProfile?.displayName}!
+        </h1>
 
-        {/* Stats and Create Post Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* Tournament Stats */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-black border border-violet-500/20 rounded-lg p-6"
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-violet-500/20 rounded-full">
-                <Trophy className="w-6 h-6 text-violet-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold">Registered Tournaments</h2>
-                <p className="text-3xl font-bold text-violet-400">{registeredTournaments}</p>
-              </div>
-            </div>
-            <Button
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-              onClick={() => window.location.href = '/tournaments'}
-            >
-              Browse Tournaments
-            </Button>
-          </motion.div>
+        {/* Show admin controls if user is admin */}
+        {isAdmin && <AdminControls />}
 
-          {/* Create Post */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:col-span-2 bg-black border border-violet-500/20 rounded-lg p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4">Create a Post</h2>
-            <form onSubmit={handleCreatePost} className="space-y-4">
-              <Textarea
-                placeholder="What's on your mind?"
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                className="w-full bg-black border-violet-500/20 focus:border-violet-500 text-white"
-                rows={3}
+        {/* Stats section - different stats for admin vs user */}
+        <UserStats />
+
+        {/* Create Post Section */}
+        <div className="bg-violet-950/50 rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Create a Post</h2>
+          <form onSubmit={handleCreatePost} className="space-y-4">
+            <Textarea
+              placeholder="What's on your mind?"
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              className="w-full bg-black border-violet-500/20 focus:border-violet-500 text-white"
+              rows={3}
+            />
+            <div className="flex gap-4">
+              <Input
+                type="url"
+                placeholder="Image URL (optional)"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="flex-1 bg-black border-violet-500/20 focus:border-violet-500 text-white"
               />
-              <div className="flex gap-4">
-                <Input
-                  type="url"
-                  placeholder="Image URL (optional)"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="flex-1 bg-black border-violet-500/20 focus:border-violet-500 text-white"
-                  prefix={<ImageIcon className="w-4 h-4 text-violet-400" />}
-                />
-                <Button
-                  type="submit"
-                  className="bg-violet-600 hover:bg-violet-700 text-white"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Posting...' : 'Post'}
-                  <Send className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </form>
-          </motion.div>
+              <Button
+                type="submit"
+                className="bg-violet-600 hover:bg-violet-700 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Posting...' : 'Post'}
+                <Send className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </form>
         </div>
 
+        {/* Photo Gallery - admin can add photos, users can only view */}
+        <PhotoGallery />
+
         {/* Announcements Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-black border border-violet-500/20 rounded-lg p-6"
-        >
+        <div className="bg-violet-950/50 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <Bell className="w-6 h-6 text-violet-400" />
-            <h2 className="text-lg font-semibold">Latest Announcements</h2>
+            <h2 className="text-xl font-semibold text-white">Latest Announcements</h2>
           </div>
           {isAnnouncementsLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -214,7 +181,7 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   )

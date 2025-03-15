@@ -5,7 +5,7 @@ import { onAuthStateChanged, setPersistence, browserLocalPersistence } from 'fir
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import type { User } from 'firebase/auth'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import Cookies from 'js-cookie'
 
@@ -35,6 +35,7 @@ interface AuthContextType {
   userProfile: UserProfile | null
   loading: boolean
   signOut: () => Promise<void>
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null,
   loading: true,
   signOut: async () => {},
+  isAdmin: false,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
 
   // Set persistence to LOCAL at initialization
   useEffect(() => {
@@ -63,9 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await auth.signOut()
       setUser(null)
       setUserProfile(null)
-      Cookies.remove('session') // Remove session cookie
+      Cookies.remove('session')
       toast.success('Signed out successfully')
-      router.push('/')
+      router.push('/login')
     } catch (error) {
       console.error('Error signing out:', error)
       toast.error('Error signing out')
@@ -73,70 +76,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    let unsubscribe: () => void
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Get user profile from Firestore
+        const userRef = doc(db, 'users', user.uid)
+        const userSnap = await getDoc(userRef)
 
-    const initializeAuth = async () => {
-      try {
-        unsubscribe = onAuthStateChanged(auth, async (user) => {
-          console.log('Auth state changed:', user?.email) // Debug log
+        if (userSnap.exists()) {
+          const profile = userSnap.data() as UserProfile
+          setUserProfile(profile)
           
-          if (user) {
-            // Set session cookie when user is authenticated
-            const token = await user.getIdToken()
-            Cookies.set('session', token, { 
-              expires: 7, // 7 days
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax'
-            })
+          // Set session cookie
+          Cookies.set('session', 'true', { expires: 7 })
 
-            const userRef = doc(db, 'users', user.uid)
-            const userSnap = await getDoc(userRef)
-
-            if (!userSnap.exists()) {
-              const newProfile: Omit<UserProfile, 'uid'> = {
-                displayName: user.displayName || user.email?.split('@')[0] || 'User',
-                email: user.email,
-                photoURL: user.photoURL || `${DEFAULT_AVATAR}?seed=${user.uid}`,
-                bio: '',
-                role: 'user',
-                level: 1,
-                followers: [],
-                following: [],
-                achievements: [],
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              }
-              await setDoc(userRef, newProfile)
-              setUserProfile({ uid: user.uid, ...newProfile })
-              toast.success('Welcome to DIU Esports Community!')
-            } else {
-              setUserProfile({ uid: user.uid, ...userSnap.data() } as UserProfile)
-            }
-            setUser(user as AuthUser)
-          } else {
-            setUser(null)
-            setUserProfile(null)
-            Cookies.remove('session') // Remove session cookie when user is not authenticated
+          // Handle login page redirect
+          if (pathname === '/login') {
+            router.push('/dashboard')
           }
-        })
-      } catch (error) {
-        console.error('Error in auth initialization:', error)
+        }
+        setUser(user as AuthUser)
+      } else {
         setUser(null)
         setUserProfile(null)
         Cookies.remove('session')
-      } finally {
-        setLoading(false)
-      }
-    }
 
-    initializeAuth()
-    return () => {
-      if (unsubscribe) unsubscribe()
-    }
-  }, [])
+        // Redirect to login if trying to access protected routes
+        if (pathname.startsWith('/dashboard')) {
+          router.push('/login')
+        }
+      }
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [router, pathname])
+
+  const isAdmin = userProfile?.role === 'admin'
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut: handleSignOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      userProfile, 
+      loading, 
+      signOut: handleSignOut,
+      isAdmin 
+    }}>
       {children}
     </AuthContext.Provider>
   )

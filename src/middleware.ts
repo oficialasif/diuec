@@ -19,7 +19,20 @@ const protectedPaths = [
 ]
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const session = request.cookies.get('session')
+  const pathname = request.nextUrl.pathname
+
+  // Redirect to admin login if trying to access admin pages without session
+  if (pathname.startsWith('/(protected)/admin') && !pathname.includes('/login')) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/(protected)/admin/login', request.url))
+    }
+  }
+
+  // Prevent accessing admin login page if already logged in
+  if (pathname === '/(protected)/admin/login' && session) {
+    return NextResponse.redirect(new URL('/(protected)/admin', request.url))
+  }
 
   // Check if the path starts with any of the protected or public paths
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`))
@@ -45,15 +58,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images (public images)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|images).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 } 
