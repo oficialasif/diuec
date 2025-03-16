@@ -36,6 +36,7 @@ interface AuthContextType {
   loading: boolean
   signOut: () => Promise<void>
   isAdmin: boolean
+  refreshUserProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   isAdmin: false,
+  refreshUserProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -71,6 +73,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error signing out:', error)
       toast.error('Failed to sign out')
+    }
+  }
+
+  const refreshUserProfile = async () => {
+    if (!user) return
+
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid))
+      if (userDoc.exists()) {
+        setUserProfile(userDoc.data() as UserProfile)
+      }
+    } catch (error) {
+      console.error('Error refreshing user profile:', error)
     }
   }
 
@@ -112,14 +127,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = userProfile?.role === 'admin'
 
+  const value = {
+    user,
+    userProfile,
+    loading,
+    signOut,
+    isAdmin,
+    refreshUserProfile
+  }
+
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      userProfile, 
-      loading, 
-      signOut,
-      isAdmin 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

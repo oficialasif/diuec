@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { Facebook, Mail, MessageCircle, MessageSquare } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -64,18 +64,43 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2">
-              <li className="text-gray-300">
-                Email: contact@diuec.com
-              </li>
-              <li className="text-gray-300">
-                Discord: DIU EC
-              </li>
-              <li className="text-gray-300">
-                Facebook: DIU Esports Community
-              </li>
-            </ul>
+            <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
+            <div className="space-y-4">
+              <a 
+                href="https://facebook.com/diuEsports" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group"
+              >
+                <Facebook className="w-5 h-5 text-blue-500 group-hover:text-blue-400" />
+                <span>DIU Esports Community</span>
+              </a>
+              <a 
+                href="https://m.me/j/AbaHK1yZtoDtzjle/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group"
+              >
+                <MessageSquare className="w-5 h-5 text-blue-600 group-hover:text-blue-500" />
+                <span>Join Messenger Group</span>
+              </a>
+              <a 
+                href="mailto:contact@diuec.com" 
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group"
+              >
+                <Mail className="w-5 h-5 text-violet-500 group-hover:text-violet-400" />
+                <span>contact@diuec.com</span>
+              </a>
+              <a 
+                href="https://discord.gg/diuec" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group"
+              >
+                <MessageCircle className="w-5 h-5 text-indigo-500 group-hover:text-indigo-400" />
+                <span>Join our Discord</span>
+              </a>
+            </div>
           </div>
         </div>
 

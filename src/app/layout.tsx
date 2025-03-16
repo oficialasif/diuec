@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/auth-context";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { Toaster as SonnerToaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,6 +53,7 @@ export default function RootLayout({
               <Footer />
             </div>
             <Toaster position="top-center" />
+            <SonnerToaster richColors position="top-center" />
           </AuthProvider>
         </Providers>
       </body>

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { Trophy, Users, Target, History, Medal, Award, Star } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -73,36 +72,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/80 z-10" />
-        <Image
-          src="/images/about-hero.jpg"
-          alt="DIU Esports Community"
-          fill
-          className="object-cover opacity-50"
-          priority
-        />
-        <div className="relative z-20 text-center px-4">
-          <motion.h1 
-            className="text-4xl md:text-6xl font-bold mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            About DIU Esports
-          </motion.h1>
-          <motion.p 
-            className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Empowering gamers, building champions, and creating a legacy in esports
-          </motion.p>
-        </div>
-      </section>
-
       {/* Mission Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
@@ -217,11 +186,10 @@ export default function AboutPage() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <div className="relative h-64">
-                    <Image
+                    <img
                       src={member.image}
                       alt={member.name}
-                      fill
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="p-6">
