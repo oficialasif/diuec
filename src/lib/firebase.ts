@@ -4,14 +4,14 @@ import { getFirestore } from 'firebase/firestore'
 import { getAnalytics, isSupported } from 'firebase/analytics'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBRiwxdKhJG935aL-gOgUQ28YUqqxhzVu8",
-  authDomain: "diu-esports-community.firebaseapp.com",
-  databaseURL: "https://diu-esports-community-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "diu-esports-community",
-  storageBucket: "diu-esports-community.firebasestorage.app",
-  messagingSenderId: "403239318204",
-  appId: "1:403239318204:web:cc4b9f2b6392042493d6b9",
-  measurementId: "G-XR1GT796ZE"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 }
 
 // Initialize Firebase
