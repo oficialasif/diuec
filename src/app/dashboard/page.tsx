@@ -8,11 +8,11 @@ import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Image as ImageIcon, Send, Trophy, Bell } from 'lucide-react'
+import { Image as ImageIcon, Send, Trophy, Bell, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import PhotoGallery from '@/components/home/PhotoGallery'
 import { UserStats } from '@/components/dashboard/UserStats'
-import { AdminControls } from '@/components/dashboard/AdminControls'
+import AdminControls from '@/components/dashboard/AdminControls'
 import { MobileSidebar } from '@/components/dashboard/MobileSidebar'
 
 export default function Dashboard() {
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [announcements, setAnnouncements] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   // Fetch user's registered tournaments
   useEffect(() => {
@@ -98,6 +99,37 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch user-specific data
+        const postsQuery = query(
+          collection(db, 'posts'),
+          where('authorId', '==', user?.uid)
+        )
+        const postsSnapshot = await getDocs(postsQuery)
+
+        // Update any necessary state here
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchData()
+    }
+  }, [user])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
