@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import PhotoGallery from '@/components/home/PhotoGallery'
 import { UserStats } from '@/components/dashboard/UserStats'
 import { AdminControls } from '@/components/dashboard/AdminControls'
+import { MobileSidebar } from '@/components/dashboard/MobileSidebar'
 
 export default function Dashboard() {
   const { user, userProfile, isAdmin } = useAuth()
@@ -100,11 +101,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black pt-16 md:pt-0">
+      {/* Mobile Sidebar */}
+      <MobileSidebar />
+
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-8">
-          Welcome, {userProfile?.displayName}!
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
+            Welcome, {userProfile?.displayName}!
+          </h1>
+        </div>
 
         {/* Show admin controls if user is admin */}
         {isAdmin && <AdminControls />}
@@ -113,7 +119,7 @@ export default function Dashboard() {
         <UserStats />
 
         {/* Create Post Section */}
-        <div className="bg-violet-950/50 rounded-lg p-6 mb-8">
+        <div className="bg-violet-950/50 rounded-lg p-4 md:p-6 mb-8">
           <h2 className="text-xl font-semibold text-white mb-4">Create a Post</h2>
           <form onSubmit={handleCreatePost} className="space-y-4">
             <Textarea
@@ -123,7 +129,7 @@ export default function Dashboard() {
               className="w-full bg-black border-violet-500/20 focus:border-violet-500 text-white"
               rows={3}
             />
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 type="url"
                 placeholder="Image URL (optional)"
@@ -133,7 +139,7 @@ export default function Dashboard() {
               />
               <Button
                 type="submit"
-                className="bg-violet-600 hover:bg-violet-700 text-white"
+                className="bg-violet-600 hover:bg-violet-700 text-white sm:w-auto w-full"
                 disabled={isLoading}
               >
                 {isLoading ? 'Posting...' : 'Post'}
@@ -147,7 +153,7 @@ export default function Dashboard() {
         <PhotoGallery />
 
         {/* Announcements Section */}
-        <div className="bg-violet-950/50 rounded-lg p-6">
+        <div className="bg-violet-950/50 rounded-lg p-4 md:p-6">
           <div className="flex items-center gap-3 mb-6">
             <Bell className="w-6 h-6 text-violet-400" />
             <h2 className="text-xl font-semibold text-white">Latest Announcements</h2>

@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth'
+import { onAuthStateChanged, setPersistence, browserLocalPersistence, signOut as firebaseSignOut } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import type { User } from 'firebase/auth'
@@ -61,17 +61,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
   }, [])
 
-  const handleSignOut = async () => {
+  const signOut = async () => {
     try {
-      await auth.signOut()
+      await firebaseSignOut(auth)
       setUser(null)
       setUserProfile(null)
-      Cookies.remove('session')
+      router.push('/')
       toast.success('Signed out successfully')
-      router.push('/login')
     } catch (error) {
       console.error('Error signing out:', error)
-      toast.error('Error signing out')
+      toast.error('Failed to sign out')
     }
   }
 
@@ -118,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       userProfile, 
       loading, 
-      signOut: handleSignOut,
+      signOut,
       isAdmin 
     }}>
       {children}
