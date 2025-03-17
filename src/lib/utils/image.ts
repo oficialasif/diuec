@@ -1,7 +1,7 @@
 // Default images for different types of content
 export const DEFAULT_IMAGES = {
   tournament: '/images/tournaments/default-tournament.jpg',
-  post: '/images/posts/default-post.jpg',
+  post: '/android-chrome-192x192.png',
   avatar: '/android-chrome-192x192.png',
   game: '/images/games/default-game.jpg',
 } as const
