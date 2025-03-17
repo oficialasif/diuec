@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-context'
 import { motion } from 'framer-motion'
 import { collection, query, orderBy, getDocs, addDoc, where, Timestamp } from 'firebase/firestore'
@@ -32,14 +32,7 @@ export default function TournamentsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [registeredTournaments, setRegisteredTournaments] = useState<string[]>([])
 
-  useEffect(() => {
-    fetchTournaments()
-    if (user) {
-      fetchUserRegistrations()
-    }
-  }, [user])
-
-  const fetchTournaments = async () => {
+  const fetchTournaments = useCallback(async () => {
     try {
       const q = query(collection(db, 'tournaments'), orderBy('startDate', 'asc'))
       const querySnapshot = await getDocs(q)
@@ -50,25 +43,34 @@ export default function TournamentsPage() {
       setTournaments(fetchedTournaments)
     } catch (error) {
       console.error('Error fetching tournaments:', error)
-      toast.error('Failed to load tournaments')
+      toast.error('Failed to fetch tournaments')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const fetchUserRegistrations = async () => {
+  const fetchUserRegistrations = useCallback(async () => {
+    if (!user) return
     try {
       const q = query(
         collection(db, 'tournament_registrations'),
         where('userId', '==', user.uid)
       )
       const querySnapshot = await getDocs(q)
-      const registeredIds = querySnapshot.docs.map(doc => doc.data().tournamentId)
-      setRegisteredTournaments(registeredIds)
+      const registrations = querySnapshot.docs.map(doc => doc.data().tournamentId)
+      setRegisteredTournaments(registrations)
     } catch (error) {
-      console.error('Error fetching registrations:', error)
+      console.error('Error fetching user registrations:', error)
+      toast.error('Failed to fetch your registrations')
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    fetchTournaments()
+    if (user) {
+      fetchUserRegistrations()
+    }
+  }, [user, fetchTournaments, fetchUserRegistrations])
 
   const handleRegister = async (tournamentId: string) => {
     if (!user) {

@@ -2,7 +2,7 @@
 export const DEFAULT_IMAGES = {
   tournament: '/images/tournaments/default-tournament.jpg',
   post: '/images/posts/default-post.jpg',
-  avatar: '/images/avatars/default-avatar.png',
+  avatar: '/android-chrome-192x192.png',
   game: '/images/games/default-game.jpg',
 } as const
 

@@ -1,14 +1,14 @@
-const { initializeApp } = require('firebase/app')
-const { 
+import { initializeApp } from 'firebase/app'
+import { 
   getAuth, 
   createUserWithEmailAndPassword 
-} = require('firebase/auth')
-const { 
+} from 'firebase/auth'
+import { 
   getFirestore, 
   doc, 
   setDoc, 
   serverTimestamp 
-} = require('firebase/firestore')
+} from 'firebase/firestore'
 
 // Your Firebase configuration
 const firebaseConfig = {

@@ -1,48 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/auth-context'
+import { createPost } from '@/lib/services'
 import { Button } from '@/components/shared/ui/button'
-import { db } from '@/lib/firebase'
-import { doc, updateDoc } from 'firebase/firestore'
 import { toast } from 'react-hot-toast'
+import Image from 'next/image'
 
-const DEFAULT_AVATAR = 'https://api.dicebear.com/7.x/avataaars/svg'
-
-export default function EditProfile() {
+export default function CreatePost() {
+  const [imageUrl, setImageUrl] = useState('')
+  const [caption, setCaption] = useState('')
   const [loading, setLoading] = useState(false)
-  const [displayName, setDisplayName] = useState('')
-  const [bio, setBio] = useState('')
-  const { user, userProfile } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
-
-  useEffect(() => {
-    if (userProfile) {
-      setDisplayName(userProfile.displayName || '')
-      setBio(userProfile.bio || '')
-    }
-  }, [userProfile])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
 
     setLoading(true)
-    try {
-      const userRef = doc(db, 'users', user.uid)
-      await updateDoc(userRef, {
-        displayName,
-        bio,
-        updatedAt: new Date(),
-      })
 
-      toast.success('Profile updated successfully!')
-      router.push(`/profile/${user.uid}`)
-    } catch (error) {
-      console.error('Error updating profile:', error)
-      toast.error('Failed to update profile')
+    try {
+      await createPost(user.uid, imageUrl, caption)
+      toast.success('Post created successfully!')
+      router.push('/dashboard')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create post'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -56,57 +42,78 @@ export default function EditProfile() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold text-white">Edit Profile</h1>
+          <h1 className="text-3xl font-bold text-white">Create Post</h1>
           <p className="mt-2 text-gray-400">
-            Update your profile information
+            Share your gaming moments with the community
           </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-8"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
-                htmlFor="displayName"
+                htmlFor="imageUrl"
                 className="block text-sm font-medium text-white"
               >
-                Display Name
+                Image URL
               </label>
               <div className="mt-1">
                 <input
-                  type="text"
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  type="url"
+                  id="imageUrl"
+                  required
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
                   className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-violet-500 sm:text-sm sm:leading-6"
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
             </div>
 
             <div>
               <label
-                htmlFor="bio"
+                htmlFor="caption"
                 className="block text-sm font-medium text-white"
               >
-                Bio
+                Caption
               </label>
               <div className="mt-1">
                 <textarea
-                  id="bio"
+                  id="caption"
+                  required
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
                   rows={4}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
                   className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-violet-500 sm:text-sm sm:leading-6"
-                  placeholder="Tell us about yourself..."
+                  placeholder="Write a caption for your post..."
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            {imageUrl && (
+              <div className="rounded-lg bg-white/5 p-4 ring-1 ring-white/10">
+                <p className="mb-2 text-sm text-white">Preview:</p>
+                <div className="relative aspect-video w-full">
+                  <Image
+                    src={imageUrl}
+                    alt="Preview"
+                    fill
+                    className="rounded-lg object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src = 'https://via.placeholder.com/640x360?text=Invalid+Image+URL'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-4">
               <Button
                 type="button"
                 variant="outline"
@@ -116,7 +123,7 @@ export default function EditProfile() {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? 'Creating...' : 'Create Post'}
               </Button>
             </div>
           </form>

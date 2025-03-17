@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/auth-context'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { AdminRouteGuard } from '@/components/auth/AdminRouteGuard'
 import { Button } from '@/components/shared/ui/button'
 import { Input } from '@/components/shared/ui/input'
 import { db } from '@/lib/firebase'
@@ -22,9 +22,7 @@ import {
   getDocs,
 } from 'firebase/firestore'
 import { toast } from 'react-hot-toast'
-import EmojiPicker from 'emoji-picker-react'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/shared/ui/popover'
-import { Send, Image as ImageIcon, Users, X } from 'lucide-react'
+import { Loader2, Send, Trash2, Users, ImageIcon, X } from 'lucide-react'
 import Image from 'next/image'
 import { Timestamp } from 'firebase/firestore'
 
@@ -132,168 +130,170 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="fixed inset-0 pt-16 bg-black">
-      <div className="h-full max-w-2xl mx-auto flex flex-col bg-gradient-to-b from-violet-950/50 to-black border-x border-violet-500/20">
-        {/* Chat Header - Fixed */}
-        <div className="absolute top-0 inset-x-0 z-20 bg-black/95 border-b border-violet-500/20 backdrop-blur supports-[backdrop-filter]:bg-black/60">
-          <div className="max-w-2xl mx-auto">
-            {/* Title Bar */}
-            <div className="px-4 py-3 border-b border-violet-500/10">
-              <h1 className="text-xl font-bold text-center text-violet-50">
-                DIU eSports Community
-              </h1>
-            </div>
-            {/* Chat Info */}
-            <div className="px-4 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-violet-200 font-medium">Community Chat</span>
+    <AdminRouteGuard>
+      <div className="fixed inset-0 pt-16 bg-black">
+        <div className="h-full max-w-2xl mx-auto flex flex-col bg-gradient-to-b from-violet-950/50 to-black border-x border-violet-500/20">
+          {/* Chat Header - Fixed */}
+          <div className="absolute top-0 inset-x-0 z-20 bg-black/95 border-b border-violet-500/20 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+            <div className="max-w-2xl mx-auto">
+              {/* Title Bar */}
+              <div className="px-4 py-3 border-b border-violet-500/10">
+                <h1 className="text-xl font-bold text-center text-violet-50">
+                  DIU eSports Community
+                </h1>
               </div>
-              <div className="flex items-center gap-2 text-violet-300/70">
-                <Users className="w-4 h-4" />
-                <span className="text-sm">{messages.length} messages</span>
+              {/* Chat Info */}
+              <div className="px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-violet-200 font-medium">Community Chat</span>
+                </div>
+                <div className="flex items-center gap-2 text-violet-300/70">
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">{messages.length} messages</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Messages - Scrollable */}
-        <div className="flex-1 overflow-y-auto pt-28 pb-24 space-y-3 px-4 scroll-smooth scrollbar-thin scrollbar-thumb-violet-600/50 scrollbar-track-transparent">
-          {messages.map((message) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-2 ${
-                message.userId === user.uid ? 'flex-row-reverse' : ''
-              }`}
-            >
-              <div className="flex flex-col gap-1">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-violet-500/20">
-                  <Image
-                    src={message.userAvatar || '/images/avatars/default-avatar.png'}
-                    alt={message.userName}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <span className="text-[10px] text-violet-400/70 text-center">
-                  {formatTime(message.createdAt)}
-                </span>
-              </div>
-
-              <div
-                className={`flex flex-col max-w-[75%] ${
-                  message.userId === user.uid ? 'items-end' : 'items-start'
+          {/* Messages - Scrollable */}
+          <div className="flex-1 overflow-y-auto pt-28 pb-24 space-y-3 px-4 scroll-smooth scrollbar-thin scrollbar-thumb-violet-600/50 scrollbar-track-transparent">
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex gap-2 ${
+                  message.userId === user.uid ? 'flex-row-reverse' : ''
                 }`}
               >
-                <div
-                  className={`rounded-2xl px-3 py-2 ${
-                    message.userId === user.uid
-                      ? 'bg-violet-600 text-white rounded-tr-none'
-                      : 'bg-violet-900/40 text-violet-50 rounded-tl-none'
-                  }`}
-                >
-                  <p className="text-xs font-medium mb-0.5 opacity-90">
-                    {message.userName}
-                  </p>
-                  {message.text && (
-                    <p className="text-sm break-words leading-relaxed">
-                      {message.text}
-                    </p>
-                  )}
-                  {message.imageUrl && (
-                    <div className="mt-2 rounded-lg overflow-hidden bg-violet-950/20">
-                      <Image
-                        src={message.imageUrl}
-                        alt="Shared image"
-                        width={300}
-                        height={200}
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-          <div ref={messagesEndRef} className="h-4" />
-        </div>
-
-        {/* Message Input - Fixed */}
-        <div className="absolute bottom-0 inset-x-0 z-20 bg-black/95 border-t border-violet-500/20 backdrop-blur supports-[backdrop-filter]:bg-black/60">
-          <div className="max-w-2xl mx-auto px-4 py-4">
-            <form onSubmit={handleSendMessage}>
-              {imageUrl && (
-                <div className="absolute bottom-full mb-4 left-4">
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden ring-2 ring-violet-500/20">
+                <div className="flex flex-col gap-1">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-violet-500/20">
                     <Image
-                      src={imageUrl}
-                      alt="Preview"
+                      src={message.userAvatar || '/android-chrome-192x192.png'}
+                      alt={message.userName}
                       fill
                       className="object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setImageUrl('')}
-                      className="absolute -top-1 -right-1 bg-black/80 rounded-full p-1.5 hover:bg-black transition-colors"
-                    >
-                      <X className="w-3 h-3 text-violet-200" />
-                    </button>
+                  </div>
+                  <span className="text-[10px] text-violet-400/70 text-center">
+                    {formatTime(message.createdAt)}
+                  </span>
+                </div>
+
+                <div
+                  className={`flex flex-col max-w-[75%] ${
+                    message.userId === user.uid ? 'items-end' : 'items-start'
+                  }`}
+                >
+                  <div
+                    className={`rounded-2xl px-3 py-2 ${
+                      message.userId === user.uid
+                        ? 'bg-violet-600 text-white rounded-tr-none'
+                        : 'bg-violet-900/40 text-violet-50 rounded-tl-none'
+                    }`}
+                  >
+                    <p className="text-xs font-medium mb-0.5 opacity-90">
+                      {message.userName}
+                    </p>
+                    {message.text && (
+                      <p className="text-sm break-words leading-relaxed">
+                        {message.text}
+                      </p>
+                    )}
+                    {message.imageUrl && (
+                      <div className="mt-2 rounded-lg overflow-hidden bg-violet-950/20">
+                        <Image
+                          src={message.imageUrl}
+                          alt="Shared image"
+                          width={300}
+                          height={200}
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-              <div className="relative flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 bg-transparent hover:bg-violet-900/40 text-violet-400"
-                  onClick={() => document.getElementById('imageUrl')?.focus()}
-                >
-                  <ImageIcon className="w-5 h-5" />
-                </Button>
+              </motion.div>
+            ))}
+            <div ref={messagesEndRef} className="h-4" />
+          </div>
+
+          {/* Message Input - Fixed */}
+          <div className="absolute bottom-0 inset-x-0 z-20 bg-black/95 border-t border-violet-500/20 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+            <div className="max-w-2xl mx-auto px-4 py-4">
+              <form onSubmit={handleSendMessage}>
+                {imageUrl && (
+                  <div className="absolute bottom-full mb-4 left-4">
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden ring-2 ring-violet-500/20">
+                      <Image
+                        src={imageUrl}
+                        alt="Preview"
+                        fill
+                        className="object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl('')}
+                        className="absolute -top-1 -right-1 bg-black/80 rounded-full p-1.5 hover:bg-black transition-colors"
+                      >
+                        <X className="w-3 h-3 text-violet-200" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="relative flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-2 bg-transparent hover:bg-violet-900/40 text-violet-400"
+                    onClick={() => document.getElementById('imageUrl')?.focus()}
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                  </Button>
+                  <Input
+                    type="text"
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSendMessage(e)
+                      }
+                    }}
+                    className="w-full bg-violet-900/20 border-none text-white placeholder-gray-400 focus:ring-2 focus:ring-violet-500 rounded-full py-6 pl-12 pr-12"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="absolute right-2 bg-violet-600 hover:bg-violet-700 transition-colors rounded-full w-8 h-8 flex items-center justify-center"
+                    disabled={isLoading || (!newMessage.trim() && !imageUrl)}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                {/* Hidden image URL input */}
                 <Input
-                  type="text"
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  id="imageUrl"
+                  type="url"
+                  placeholder="Paste image URL and press Enter"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="sr-only"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === 'Enter') {
                       e.preventDefault()
-                      handleSendMessage(e)
+                      e.currentTarget.blur()
                     }
                   }}
-                  className="w-full bg-violet-900/20 border-none text-white placeholder-gray-400 focus:ring-2 focus:ring-violet-500 rounded-full py-6 pl-12 pr-12"
                 />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="absolute right-2 bg-violet-600 hover:bg-violet-700 transition-colors rounded-full w-8 h-8 flex items-center justify-center"
-                  disabled={isLoading || (!newMessage.trim() && !imageUrl)}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-              {/* Hidden image URL input */}
-              <Input
-                id="imageUrl"
-                type="url"
-                placeholder="Paste image URL and press Enter"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="sr-only"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    e.currentTarget.blur()
-                  }
-                }}
-              />
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AdminRouteGuard>
   )
 } 
