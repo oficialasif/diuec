@@ -14,8 +14,7 @@ const publicPaths = [
 
 // Protected routes that require authentication
 const protectedPaths = [
-  '/dashboard',
-  '/chat'
+  '/dashboard'
 ]
 
 export function middleware(request: NextRequest) {
