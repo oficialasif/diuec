@@ -171,4 +171,14 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Universal scrollbar hide for all elements inside body */
+  *::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  * {
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;  /* Firefox */
+  }
 }

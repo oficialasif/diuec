@@ -52,6 +52,8 @@ export const isAllowedImageDomain = (url: string): boolean => {
       'firebasestorage.googleapis.com',
       'lh3.googleusercontent.com',
       'avatars.githubusercontent.com',
+      'images.unsplash.com',
+      'unsplash.com'
     ]
     return allowedDomains.some(domain => urlObj.hostname === domain || urlObj.hostname.endsWith(`.${domain}`))
   } catch {

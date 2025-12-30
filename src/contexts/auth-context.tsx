@@ -102,13 +102,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Set session cookie
           Cookies.set('session', 'true', { expires: 7 })
-
-          // Handle login page redirect
-          if (pathname === '/login') {
-            router.push('/dashboard')
-          }
         }
         setUser(user as AuthUser)
+
+        // Handle login page redirect
+        if (pathname === '/login') {
+          router.push('/dashboard')
+        }
       } else {
         setUser(null)
         setUserProfile(null)
@@ -122,8 +122,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => unsubscribe()
-  }, [router, pathname])
+    // Add beforeunload event listener for cleanup
+    const handleBeforeUnload = () => {
+      // Perform any necessary cleanup
+      if (user) {
+        Cookies.remove('session')
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      unsubscribe()
+      // Remove beforeunload event listener
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [router, pathname, user])
 
   const isAdmin = userProfile?.role === 'admin'
 

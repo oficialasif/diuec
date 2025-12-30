@@ -10,6 +10,8 @@ const publicPaths = [
   '/community',
   '/auth/login',
   '/auth/register',
+  '/auth/admin-login',
+  '/diuec',
 ]
 
 // Protected routes that require authentication
@@ -36,7 +38,7 @@ export function middleware(request: NextRequest) {
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(`${path}/`))
   const isProtectedPath = protectedPaths.some(path => pathname === path || pathname.startsWith(`${path}/`))
   const isAuthPath = pathname.startsWith('/auth/')
-  
+
   // Get the token from cookies
   const token = request.cookies.get('session')?.value
 

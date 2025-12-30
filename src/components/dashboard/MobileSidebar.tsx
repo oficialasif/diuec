@@ -37,13 +37,16 @@ export function MobileSidebar() {
 
   // Prevent body scroll when sidebar is open
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow
+    
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = originalStyle
     }
+    
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = originalStyle
     }
   }, [isOpen])
 

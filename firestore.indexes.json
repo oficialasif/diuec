@@ -6,25 +6,37 @@
       "fields": [
         {
           "fieldPath": "type",
-          "mode": "IN"
+          "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
           "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
         }
       ]
     },
     {
-      "collectionGroup": "tournament_registrations",
+      "collectionGroup": "banner_announcements",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "userId",
+          "fieldPath": "type",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "registeredAt",
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "validuntil",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
         }
       ]
     },
@@ -65,24 +77,20 @@
       ]
     },
     {
-      "collectionGroup": "banner_announcements",
+      "collectionGroup": "tournament_registrations",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "type",
+          "fieldPath": "userId",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "validUntil",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
+          "fieldPath": "registeredAt",
           "order": "DESCENDING"
         },
         {
           "fieldPath": "__name__",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     }

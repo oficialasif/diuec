@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { X, Eye, EyeOff, Mail, Lock, User, ArrowRight, Facebook } from "lucide-react"
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -12,6 +12,7 @@ import {
   FacebookAuthProvider,
   updateProfile
 } from 'firebase/auth'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { toast } from 'react-hot-toast'
 import { FirebaseError } from 'firebase/app'
 
@@ -63,13 +64,16 @@ export function AuthModal({
 
   // Prevent body scrolling when modal is open
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow
+    
     if (isOpen) {
       document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = "auto"
+      document.body.style.overflow = originalStyle
     }
+    
     return () => {
-      document.body.style.overflow = "auto"
+      document.body.style.overflow = originalStyle
     }
   }, [isOpen])
 
@@ -104,9 +108,28 @@ export function AuthModal({
     try {
       if (isSignUp) {
         const { user } = await createUserWithEmailAndPassword(auth, email, password)
+        
+        // Update user profile
         await updateProfile(user, {
           displayName: username || email.split('@')[0],
         })
+
+        // Create user document in Firestore
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: user.email,
+          displayName: username || email.split('@')[0],
+          photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          bio: '',
+          role: 'user',
+          level: 1,
+          followers: [],
+          following: [],
+          achievements: [],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        })
+
         toast.success('Account created successfully!')
       } else {
         await signInWithEmailAndPassword(auth, email, password)
@@ -131,7 +154,28 @@ export function AuthModal({
         ? new GoogleAuthProvider()
         : new FacebookAuthProvider()
       
-      await signInWithPopup(auth, authProvider)
+      const result = await signInWithPopup(auth, authProvider)
+      const user = result.user
+
+      // Create user document in Firestore if it doesn't exist or update if it does
+      const userDocRef = doc(db, 'users', user.uid)
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split('@')[0],
+        photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+        bio: '',
+        role: 'user',
+        level: 1,
+        followers: [],
+        following: [],
+        achievements: [],
+        lastLogin: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { 
+        merge: true // This will only update fields that are provided and keep existing data
+      })
+
       toast.success('Signed in successfully!')
       onLogin()
       onClose()

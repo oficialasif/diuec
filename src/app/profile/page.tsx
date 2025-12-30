@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/auth-context'
-import { doc, updateDoc, getDoc } from 'firebase/firestore'
+import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
@@ -33,7 +33,9 @@ export default function ProfilePage() {
       if (!user) return
 
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid))
+        const userRef = doc(db, 'users', user.uid)
+        const userDoc = await getDoc(userRef)
+        
         if (userDoc.exists()) {
           const userData = userDoc.data() as ProfileData
           setProfile({
@@ -43,6 +45,32 @@ export default function ProfilePage() {
             photoURL: userData.photoURL || '',
             bio: userData.bio || '',
             updatedAt: userData.updatedAt || ''
+          })
+        } else {
+          // Create initial user document if it doesn't exist
+          const initialProfile = {
+            uid: user.uid,
+            displayName: user.displayName || '',
+            email: user.email || '',
+            photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+            bio: '',
+            role: 'user',
+            level: 1,
+            followers: [],
+            following: [],
+            achievements: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+          
+          await setDoc(userRef, initialProfile)
+          
+          setProfile({
+            displayName: initialProfile.displayName,
+            email: initialProfile.email,
+            phoneNumber: '',
+            photoURL: initialProfile.photoURL,
+            bio: ''
           })
         }
       } catch (error) {
@@ -83,9 +111,31 @@ export default function ProfilePage() {
         updateData.bio = profile.bio.trim()
       }
 
-      // Update user profile in Firestore
+      // Check if user document exists
       const userRef = doc(db, 'users', user.uid)
-      await updateDoc(userRef, updateData)
+      const userDoc = await getDoc(userRef)
+
+      if (!userDoc.exists()) {
+        // Create the user document if it doesn't exist
+        await setDoc(userRef, {
+          uid: user.uid,
+          displayName: profile.displayName.trim(),
+          email: profile.email.trim(),
+          photoURL: profile.photoURL.trim() || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+          bio: profile.bio?.trim() || '',
+          role: 'user',
+          level: 1,
+          followers: [],
+          following: [],
+          achievements: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          ...(profile.phoneNumber?.trim() && { phoneNumber: profile.phoneNumber.trim() })
+        })
+      } else {
+        // Update existing user document
+        await updateDoc(userRef, updateData)
+      }
 
       // Refresh the user profile in the auth context
       await refreshUserProfile()
