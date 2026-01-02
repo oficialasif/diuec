@@ -2,22 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { getTeam, joinTeamWithCode } from '@/lib/services'
+import { getTeam } from '@/lib/services'
 import { Team } from '@/lib/models'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/shared/ui/button'
-import { Users, Trophy, calendar, Shield, Sword } from 'lucide-react'
+import { Users, Trophy, Calendar, Shield, Sword } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import React from 'react'
 import { getValidImageUrl } from '@/lib/utils/image'
+import JoinTeamDialog from '@/components/teams/JoinTeamDialog'
 
 export default function TeamDetailsPage() {
     const params = useParams()
     const { user } = useAuth()
     const [team, setTeam] = useState<Team | null>(null)
     const [loading, setLoading] = useState(true)
-    const [joining, setJoining] = useState(false)
+    const [showJoinDialog, setShowJoinDialog] = useState(false)
 
     // Use useEffect to unwrap params correctly
     const teamId = params?.id as string
@@ -38,20 +39,14 @@ export default function TeamDetailsPage() {
         fetchTeam()
     }, [teamId])
 
-    const handleJoin = async () => {
-        if (!user || !team) return
-        setJoining(true)
+    const handleJoinSuccess = async () => {
+        if (!team) return
+        // Refresh team data
         try {
-            await joinTeamWithCode(user.uid, team.id)
-            toast.success('Joined team successfully!')
-            // Refresh team data
             const updatedTeam = await getTeam(team.id)
             setTeam(updatedTeam)
-        } catch (error: any) {
-            console.error('Join error:', error)
-            toast.error(error.message || 'Failed to join team')
-        } finally {
-            setJoining(false)
+        } catch (error) {
+            console.error('Error refreshing team:', error)
         }
     }
 
@@ -80,7 +75,7 @@ export default function TeamDetailsPage() {
         <div className="min-h-screen bg-black text-white pt-16">
             {/* Header Banner */}
             <div className="h-64 bg-gradient-to-b from-violet-900/20 to-black relative">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
                 <div className="container mx-auto px-4 h-full flex items-end pb-8">
                     <div className="flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
                         <div className="h-32 w-32 rounded-2xl border-4 border-black bg-zinc-800 relative overflow-hidden shadow-2xl -mb-4 md:mb-0">
@@ -112,11 +107,10 @@ export default function TeamDetailsPage() {
                         <div className="mb-4 md:mb-0">
                             {!isMember ? (
                                 <Button
-                                    onClick={handleJoin}
-                                    disabled={joining}
+                                    onClick={() => user ? setShowJoinDialog(true) : toast.error('Please sign in to join')}
                                     className="bg-violet-600 hover:bg-violet-700 px-8"
                                 >
-                                    {joining ? 'Joining...' : 'Request to Join'}
+                                    Request to Join
                                 </Button>
                             ) : (
                                 <Button variant="outline" className="border-green-500 text-green-400 bg-green-500/10 cursor-default">
@@ -151,12 +145,16 @@ export default function TeamDetailsPage() {
                                         <h3 className="font-bold text-lg">{member.displayName}</h3>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${member.role === 'captain' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
-                                                    'bg-zinc-800 text-gray-400'
+                                                'bg-zinc-800 text-gray-400'
                                                 }`}>
                                                 {member.role}
                                             </span>
                                             <span className="text-xs text-gray-500">
-                                                Since {new Date(member.joinedAt?.seconds * 1000 || member.joinedAt).toLocaleDateString()}
+                                                Since {new Date(
+                                                    typeof member.joinedAt === 'object' && member.joinedAt && 'seconds' in member.joinedAt
+                                                        ? (member.joinedAt as any).seconds * 1000
+                                                        : member.joinedAt
+                                                ).toLocaleDateString()}
                                             </span>
                                         </div>
                                     </div>
@@ -206,6 +204,19 @@ export default function TeamDetailsPage() {
                 </div>
 
             </div>
+
+            {/* Join Team Dialog */}
+            {user && team && (
+                <JoinTeamDialog
+                    isOpen={showJoinDialog}
+                    onClose={() => setShowJoinDialog(false)}
+                    teamId={team.id}
+                    teamName={team.name}
+                    gameName={team.game}
+                    userId={user.uid}
+                    onSuccess={handleJoinSuccess}
+                />
+            )}
         </div>
     )
 }

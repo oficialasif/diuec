@@ -70,13 +70,14 @@ export interface Tournament {
   title: string
   game: string // 'VALORANT' | 'CS2' | 'PUBGM' | 'EFOOTBALL' | 'OTHER'
   format: 'SOLO' | 'DUO' | 'TRIO' | 'SQUAD'
-  type: 'ELIMINATION' | 'BATTLE_ROYALE'
+  type: 'ELIMINATION' | 'BATTLE_ROYALE' | 'GROUP_KNOCKOUT'
   description: string
   prizePool: string
   entryFee?: string
 
   maxTeams: number
   registeredTeams: number
+  teamSize: number // Driven by format usually, but good to store. e.g. Squad=4 or 5?
 
   registrationStart: Date
   registrationEnd: Date
@@ -133,5 +134,36 @@ export interface TournamentRegistration {
   teamId?: string // Null for SOLO if registering as individual
   userId: string // Captain or Individual
   status: 'pending' | 'approved' | 'rejected'
+  createdAt: Date
+}
+
+export interface TeamInvite {
+  id: string
+  teamId: string
+  teamName?: string
+  invitedEmail: string
+  invitedUserId?: string // Can be null if inviting non-registered user
+  inviterId: string
+  status: 'pending' | 'accepted' | 'rejected'
+  createdAt: Date
+}
+
+
+export interface JoinRequest {
+  id: string
+  teamId: string
+  teamName?: string
+  userId: string
+  userDisplayName: string
+  userPhotoURL: string
+
+  // Additional player information
+  diuId: string // DIU student ID
+  deviceType: string // Mobile, PC, Console
+  playingLevel: 'beginner' | 'intermediate' | 'advanced' | 'pro'
+  experience: string // Years of experience or description
+  gameName: string // Specific game for the team
+
+  status: 'pending' | 'accepted' | 'rejected'
   createdAt: Date
 } 

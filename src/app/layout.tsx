@@ -48,13 +48,11 @@ export default function RootLayout({
       <body suppressHydrationWarning className={`${inter.className} min-h-screen bg-black text-white`}>
         <Providers>
           <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-grow mt-16">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            <Navbar />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
             <Toaster position="top-center" />
             <SonnerToaster richColors position="top-center" />
           </AuthProvider>

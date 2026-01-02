@@ -43,9 +43,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userProfile: null,
   loading: true,
-  signOut: async () => {},
+  signOut: async () => { },
   isAdmin: false,
-  refreshUserProfile: async () => {},
+  refreshUserProfile: async () => { },
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (userSnap.exists()) {
           const profile = userSnap.data() as UserProfile
           setUserProfile(profile)
-          
+
           // Set session cookie
           Cookies.set('session', 'true', { expires: 7 })
         }

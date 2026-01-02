@@ -11,11 +11,18 @@ import { User, LogOut, Settings, Trophy, Menu, X, ChevronRight, ChevronDown } fr
 import { cn } from '@/lib/utils'
 
 export default function Navbar() {
+  const pathname = usePathname()
+
+  // Early return MUST be before any hooks to maintain hook order
+  if (pathname?.startsWith('/diuec') || pathname?.startsWith('/auth')) {
+    return null
+  }
+
   const { user, userProfile, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null)
-  const pathname = usePathname()
+  const [isScrolled, setIsScrolled] = useState(false)
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -47,15 +54,35 @@ export default function Navbar() {
     return pathname?.startsWith(href)
   }
 
+  // State for dynamic navigation
+  const [games, setGames] = useState<{ name: string; displayName: string }[]>([])
+
+  useEffect(() => {
+    // Fetch active games for the dropdown
+    const fetchGames = async () => {
+      try {
+        const { getActiveGames } = await import('@/lib/game-services')
+        const activeGames = await getActiveGames()
+        setGames(activeGames)
+      } catch (error) {
+        console.error('Failed to fetch games for navbar', error)
+      }
+    }
+    fetchGames()
+  }, [])
+
   const navItems = [
-    { href: '/community', label: 'COMMUNITY' },
+    { href: '/', label: 'HOME' },
+    // { href: '/community', label: 'COMMUNITY' }, // Temporarily disabled
     {
-      href: '/tournaments', label: 'TOURNAMENTS', dropdownItems: [
-        { href: '/games/pubg', label: 'PUBG' },
-        { href: '/games/free-fire', label: 'FREE FIRE' },
-        { href: '/games/football', label: 'FOOTBALL' },
-        { href: '/games/valorant', label: 'VALORANT' },
-        { href: '/games/cs2', label: 'CS2' },
+      href: '/tournaments',
+      label: 'TOURNAMENTS',
+      dropdownItems: games.length > 0 ? games.map(game => ({
+        href: `/games/${game.name.toLowerCase()}`,
+        label: game.displayName.toUpperCase()
+      })) : [
+        { href: '/games/pubg', label: 'PUBG' }, // Failsafe defaults
+        { href: '/games/free-fire', label: 'FREE FIRE' }
       ]
     },
     { href: '/teams', label: 'TEAMS' },
@@ -72,14 +99,33 @@ export default function Navbar() {
     setIsMobileMenuOpen(false)
   }
 
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-violet-500/20 h-16">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-16 border-b",
+        isScrolled
+          ? "bg-black/80 backdrop-blur-md border-violet-500/20 shadow-lg"
+          : "bg-transparent border-transparent"
+      )}
+    >
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <Link href="/">
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent">DIU ESPORTS</h1>
-          </Link>
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent cursor-default">DIU ESPORTS</h1>
         </div>
 
         {/* Desktop Navigation */}

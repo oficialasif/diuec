@@ -163,6 +163,18 @@ export async function createTeam(
   if (!userProfile) throw new Error('User not found')
 
   const teamsRef = collection(db, 'teams')
+
+  // Check if user already has a team for this game
+  const q = query(
+    teamsRef,
+    where('captainId', '==', userId),
+    where('game', '==', teamData.game)
+  )
+  const existing = await getDocs(q)
+  if (!existing.empty) {
+    throw new Error(`You already manage a ${teamData.game} team. You can only captain one team per game.`)
+  }
+
   const newTeamRef = doc(teamsRef)
 
   const captain: TeamMember = {
@@ -261,6 +273,141 @@ export async function leaveTeam(userId: string, teamId: string) {
   })
 }
 
+// Team Invites
+export async function sendTeamInvite(teamId: string, email: string, inviterId: string) {
+  const team = await getTeam(teamId)
+  if (!team) throw new Error('Team not found')
+  if (team.captainId !== inviterId) throw new Error('Only captain can invite')
+
+  const invitesRef = collection(db, 'team_invites')
+  // Check pending invites
+  const q = query(
+    invitesRef,
+    where('teamId', '==', teamId),
+    where('invitedEmail', '==', email),
+    where('status', '==', 'pending')
+  )
+  const existing = await getDocs(q)
+  if (!existing.empty) throw new Error('Already invited')
+
+  const newRef = doc(invitesRef)
+  await setDoc(newRef, {
+    id: newRef.id,
+    teamId,
+    teamName: team.name,
+    invitedEmail: email,
+    inviterId,
+    status: 'pending',
+    createdAt: new Date()
+  })
+}
+
+export async function getMyInvites(email: string) {
+  const invitesRef = collection(db, 'team_invites')
+  const q = query(
+    invitesRef,
+    where('invitedEmail', '==', email),
+    where('status', '==', 'pending')
+  )
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
+}
+
+export async function acceptTeamInvite(inviteId: string, userId: string) {
+  const inviteRef = doc(db, 'team_invites', inviteId)
+  const inviteSnap = await getDoc(inviteRef)
+  if (!inviteSnap.exists()) throw new Error('Invite not found')
+  const invite = inviteSnap.data()
+
+  await updateDoc(inviteRef, { status: 'accepted' })
+  await joinTeamWithCode(userId, invite.teamId)
+}
+
+// Join Requests
+export async function requestToJoinTeam(
+  teamId: string,
+  userId: string,
+  requestData: {
+    diuId: string
+    deviceType: string
+    playingLevel: 'beginner' | 'intermediate' | 'advanced' | 'pro'
+    experience: string
+    gameName: string
+  }
+) {
+  const team = await getTeam(teamId)
+  if (!team) throw new Error('Team not found')
+  if (team.memberIds.includes(userId)) throw new Error('Already a member')
+
+  const userProfile = await getUserProfile(userId)
+  if (!userProfile) throw new Error('User profile not found')
+
+  const requestsRef = collection(db, 'join_requests')
+  const q = query(
+    requestsRef,
+    where('teamId', '==', teamId),
+    where('userId', '==', userId),
+    where('status', '==', 'pending')
+  )
+  const existing = await getDocs(q)
+  if (!existing.empty) throw new Error('Request already sent')
+
+  const newRef = doc(requestsRef)
+  await setDoc(newRef, {
+    id: newRef.id,
+    teamId,
+    teamName: team.name,
+    userId,
+    userDisplayName: userProfile.displayName,
+    userPhotoURL: userProfile.photoURL,
+    diuId: requestData.diuId,
+    deviceType: requestData.deviceType,
+    playingLevel: requestData.playingLevel,
+    experience: requestData.experience,
+    gameName: requestData.gameName,
+    status: 'pending',
+    createdAt: new Date()
+  })
+}
+
+export async function getTeamJoinRequests(teamId: string) {
+  const requestsRef = collection(db, 'join_requests')
+  const q = query(requestsRef, where('teamId', '==', teamId), where('status', '==', 'pending'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
+}
+
+export async function acceptJoinRequest(requestId: string) {
+  const reqRef = doc(db, 'join_requests', requestId)
+  const reqSnap = await getDoc(reqRef)
+  if (!reqSnap.exists()) throw new Error('Request not found')
+  const request = reqSnap.data()
+
+  await updateDoc(reqRef, { status: 'accepted' })
+  await joinTeamWithCode(request.userId, request.teamId)
+}
+
+export async function rejectJoinRequest(requestId: string) {
+  const reqRef = doc(db, 'join_requests', requestId)
+  const reqSnap = await getDoc(reqRef)
+  if (!reqSnap.exists()) throw new Error('Request not found')
+
+  await updateDoc(reqRef, { status: 'rejected' })
+}
+
+export async function respondToJoinRequest(requestId: string, status: 'accepted' | 'rejected') {
+  const reqRef = doc(db, 'join_requests', requestId)
+  const reqSnap = await getDoc(reqRef)
+  if (!reqSnap.exists()) throw new Error('Request not found')
+  const request = reqSnap.data()
+
+  await updateDoc(reqRef, { status })
+
+  if (status === 'accepted') {
+    await joinTeamWithCode(request.userId, request.teamId)
+  }
+}
+
 // Tournament Services
 export async function createTournament(data: Omit<Tournament, 'id' | 'registeredTeams' | 'status'>) {
   const tournamentsRef = collection(db, 'tournaments')
@@ -281,7 +428,7 @@ export async function getTournaments() {
   const tournamentsRef = collection(db, 'tournaments')
   const q = query(tournamentsRef, orderBy('startDate', 'asc'))
   const querySnapshot = await getDocs(q)
-  return querySnapshot.docs.map(doc => doc.data() as Tournament)
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Tournament)
 }
 
 export async function getTournament(id: string) {
@@ -290,7 +437,7 @@ export async function getTournament(id: string) {
   return docSnap.exists() ? docSnap.data() as Tournament : null
 }
 
-export async function registerForTournament(tournamentId: string, teamId: string, userId: string) {
+export async function registerForTournament(tournamentId: string, teamId: string | null, userId: string) {
   const tournament = await getTournament(tournamentId)
   if (!tournament) throw new Error('Tournament not found')
 
@@ -298,20 +445,78 @@ export async function registerForTournament(tournamentId: string, teamId: string
     throw new Error('Tournament is full')
   }
 
+  // Strict Status Check
+  // Assuming 'upcoming' means open. If we add 'closed' status later, check here.
+  if (tournament.status !== 'upcoming') {
+    throw new Error('Tournament registration is closed')
+  }
+
   const regsRef = collection(db, 'tournament_registrations')
-  const q = query(
-    regsRef,
-    where('tournamentId', '==', tournamentId),
-    where('teamId', '==', teamId)
-  )
+
+  // Check for existing registration
+  let q;
+  if (teamId) {
+    q = query(
+      regsRef,
+      where('tournamentId', '==', tournamentId),
+      where('teamId', '==', teamId)
+    )
+  } else {
+    q = query(
+      regsRef,
+      where('tournamentId', '==', tournamentId),
+      where('userId', '==', userId)
+    )
+  }
+
   const existing = await getDocs(q)
-  if (!existing.empty) throw new Error('Team already registered')
+  if (!existing.empty) throw new Error('Already registered')
+
+  // TEAM & FORMAT VALIDATION
+  if (teamId) {
+    const team = await getTeam(teamId);
+    if (!team) throw new Error('Team not found');
+
+    // 1. Check if team captain is performing the registration (userId)
+    if (team.captainId !== userId) {
+      throw new Error('Only the team captain can register the team');
+    }
+
+    // 2. Validate Team Size
+    const currentMemberCount = team.members.length;
+
+    // Use tournament.teamSize if available, otherwise infer from format
+    let requiredSize = tournament.teamSize;
+    if (!requiredSize || requiredSize === 0) {
+      if (tournament.format === 'SOLO') requiredSize = 1;
+      else if (tournament.format === 'DUO') requiredSize = 2;
+      else if (tournament.format === 'TRIO') requiredSize = 3;
+      else if (tournament.format === 'SQUAD') requiredSize = 4; // Default to 4 for Squad if not specified? 
+      // Note: Some squads are 5. Safest to enforce tournament.teamSize which Admin sets.
+    }
+
+    // Enforce strict size if we have a requirement
+    if (requiredSize && currentMemberCount !== requiredSize) {
+      throw new Error(`Invalid team size. ${tournament.format} tournament requires exactly ${requiredSize} players. Your team has ${currentMemberCount}.`);
+    }
+
+    // 3. Validate Format Compatibility (optional if handled by size, but good for sanity)
+    // e.g. Don't let a 1-man team register for SQUAD even if logic above slipped
+    if (tournament.format === 'SOLO' && currentMemberCount !== 1) throw new Error("Solo tournaments require a team of 1 (Individual).");
+    if (tournament.format === 'DUO' && currentMemberCount !== 2) throw new Error("Duo tournaments require exactly 2 players.");
+  } else {
+    // Solo registration without a team structure (legacy/direct support)
+    if (tournament.format !== 'SOLO') {
+      throw new Error('This tournament requires a Team to register.');
+    }
+  }
 
   const newRegRef = doc(regsRef)
   const reg: TournamentRegistration = {
     id: newRegRef.id,
     tournamentId,
-    teamId,
+    // @ts-ignore
+    teamId: teamId || null,
     userId,
     status: 'approved',
     createdAt: new Date()
@@ -324,75 +529,20 @@ export async function registerForTournament(tournamentId: string, teamId: string
   })
 }
 
-// Bracket Logic
-export async function generateBracket(tournamentId: string) {
-  const tournament = await getTournament(tournamentId)
-  if (!tournament) throw new Error('Tournament not found')
-
-  const regsRef = collection(db, 'tournament_registrations')
-  const q = query(regsRef, where('tournamentId', '==', tournamentId))
-  const regSnaps = await getDocs(q)
-  const registrations = regSnaps.docs.map(d => d.data() as TournamentRegistration)
-
-  if (registrations.length < 2) throw new Error('Not enough teams to generate bracket')
-
-  const matches: Match[] = []
-  const batch = writeBatch(db)
-
-  if (tournament.type === 'ELIMINATION') {
-    const shuffled = registrations.sort(() => Math.random() - 0.5)
-    const teamCount = shuffled.length
-    let powerOf2 = 2
-    while (powerOf2 < teamCount) powerOf2 *= 2
-
-    const byes = powerOf2 - teamCount
-    const round1Matches = teamCount - byes
-
-    let matchNum = 1
-    for (let i = 0; i < round1Matches; i += 2) {
-      const newMatchRef = doc(collection(db, 'matches'))
-      const match: Match = {
-        id: newMatchRef.id,
-        tournamentId,
-        type: 'ELIMINATION',
-        round: 1,
-        matchNumber: matchNum++,
-        status: 'SCHEDULED',
-        teamAId: shuffled[i].teamId,
-        teamBId: shuffled[i + 1].teamId,
-        scoreA: 0,
-        scoreB: 0,
-        startTime: tournament.startDate
-      }
-      batch.set(newMatchRef, match)
-    }
-
-  } else {
-    const newMatchRef = doc(collection(db, 'matches'))
-    const match: Match = {
-      id: newMatchRef.id,
-      tournamentId,
-      type: 'BATTLE_ROYALE',
-      round: 1,
-      matchNumber: 1,
-      status: 'SCHEDULED',
-      participants: registrations.map(r => r.teamId!),
-      results: [],
-      startTime: tournament.startDate
-    }
-    batch.set(newMatchRef, match)
-  }
-
-  await updateDoc(doc(db, 'tournaments', tournamentId), {
-    status: 'ongoing'
-  })
-
-  await batch.commit()
-}
-
 export async function getTournamentMatches(tournamentId: string) {
   const matchesRef = collection(db, 'matches')
   const q = query(matchesRef, where('tournamentId', '==', tournamentId), orderBy('matchNumber', 'asc'))
   const snapshot = await getDocs(q)
   return snapshot.docs.map(doc => doc.data() as Match)
+}
+
+export async function updateMatchResult(matchId: string, scoreA: number, scoreB: number, winnerId: string | null) {
+  const matchRef = doc(db, 'matches', matchId)
+
+  await updateDoc(matchRef, {
+    scoreA,
+    scoreB,
+    winnerId,
+    status: 'COMPLETED'
+  })
 } 

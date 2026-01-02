@@ -53,7 +53,8 @@ export const isAllowedImageDomain = (url: string): boolean => {
       'lh3.googleusercontent.com',
       'avatars.githubusercontent.com',
       'images.unsplash.com',
-      'unsplash.com'
+      'unsplash.com',
+      'res.cloudinary.com'
     ]
     return allowedDomains.some(domain => urlObj.hostname === domain || urlObj.hostname.endsWith(`.${domain}`))
   } catch {

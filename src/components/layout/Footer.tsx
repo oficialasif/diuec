@@ -7,7 +7,8 @@ import { usePathname } from 'next/navigation'
 export default function Footer() {
   const pathname = usePathname()
 
-  if (pathname === '/chat' || pathname === '/community') {
+  // Hide footer on chat, community, admin, and auth routes
+  if (pathname === '/chat' || pathname === '/community' || pathname?.startsWith('/diuec') || pathname?.startsWith('/auth')) {
     return null
   }
 
@@ -35,9 +36,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/community" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                {/* <Link href="/community" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   Community
-                </Link>
+                </Link> */}
               </li>
               <li>
                 <Link href="/leaderboard" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">

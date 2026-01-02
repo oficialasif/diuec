@@ -61,6 +61,7 @@ export function ImageUpload({ value, onChange, disabled, label = "Upload Image" 
                         alt="Uploaded"
                         fill
                         className="object-cover"
+                        unoptimized
                     />
                     <button
                         onClick={() => onChange('')}

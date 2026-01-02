@@ -1,0 +1,11 @@
+{
+    "css.lint.unknownAtRules": "ignore",
+    "css.customData": [
+        ".vscode/css-data.json"
+    ],
+    "json.schemaDownload.enable": true,
+    "json.maxItemsComputed": 5000,
+    "files.associations": {
+        "*.css": "tailwindcss"
+    }
+}

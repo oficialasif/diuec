@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/contexts/auth-context'
 import { getAllTeams } from '@/lib/services'
 import { Team } from '@/lib/models'
 import { Button } from '@/components/shared/ui/button'
 import { Input } from '@/components/shared/ui/input'
-import { Search, Users, Trophy } from 'lucide-react'
+import { Search, Users, Trophy, Shield } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function TeamsPage() {
+  const { user } = useAuth()
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,6 +54,14 @@ export default function TeamsPage() {
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
+            {user && (
+              <Link href="/teams/my-team">
+                <Button variant="outline" className="whitespace-nowrap border-violet-500 text-violet-400 hover:bg-violet-500/10">
+                  <Shield className="w-4 h-4 mr-2" />
+                  My Team
+                </Button>
+              </Link>
+            )}
             <Link href="/teams/create">
               <Button className="bg-violet-600 hover:bg-violet-700 whitespace-nowrap">
                 Create Team

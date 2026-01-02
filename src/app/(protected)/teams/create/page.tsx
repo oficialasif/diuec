@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { createTeam } from '@/lib/services'
+import { getActiveGames, Game } from '@/lib/game-services'
 import { Button } from '@/components/shared/ui/button'
 import { Input } from '@/components/shared/ui/input'
 import { Textarea } from '@/components/shared/ui/textarea'
@@ -12,25 +13,38 @@ import toast from 'react-hot-toast'
 import { Users, Gamepad2, Link as LinkIcon, Shield } from 'lucide-react'
 import Image from 'next/image'
 
-const GAMES = [
-    { id: 'VALORANT', label: 'Valorant' },
-    { id: 'CS2', label: 'Counter-Strike 2' },
-    { id: 'PUBGM', label: 'PUBG Mobile' },
-    { id: 'FIFA', label: 'EA Sports FC' },
-    { id: 'OTHER', label: 'Other' }
-] as const
-
 export default function CreateTeamPage() {
     const { user } = useAuth()
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [games, setGames] = useState<Game[]>([])
+    const [loadingGames, setLoadingGames] = useState(true)
     const [formData, setFormData] = useState({
         name: '',
         tag: '',
         logo: '',
         description: '',
-        game: 'VALORANT' as const
+        game: ''
     })
+
+    useEffect(() => {
+        fetchGames()
+    }, [])
+
+    const fetchGames = async () => {
+        try {
+            const data = await getActiveGames()
+            setGames(data)
+            if (data.length > 0) {
+                setFormData(prev => ({ ...prev, game: data[0].name }))
+            }
+            setLoadingGames(false)
+        } catch (error) {
+            console.error('Error fetching games:', error)
+            toast.error('Failed to load games')
+            setLoadingGames(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -43,7 +57,7 @@ export default function CreateTeamPage() {
                 tag: formData.tag,
                 logo: formData.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=random`,
                 description: formData.description,
-                game: formData.game,
+                game: formData.game as any,
                 invites: []
             })
 
@@ -115,13 +129,20 @@ export default function CreateTeamPage() {
                                         <select
                                             className="w-full h-10 pl-10 rounded-lg bg-black border border-zinc-700 text-white focus:border-violet-500 focus:ring-violet-500 sm:text-sm"
                                             value={formData.game}
-                                            onChange={e => setFormData({ ...formData, game: e.target.value as any })}
+                                            onChange={e => setFormData({ ...formData, game: e.target.value })}
+                                            disabled={loadingGames}
                                         >
-                                            {GAMES.map(game => (
-                                                <option key={game.id} value={game.id}>
-                                                    {game.label}
-                                                </option>
-                                            ))}
+                                            {loadingGames ? (
+                                                <option>Loading games...</option>
+                                            ) : games.length === 0 ? (
+                                                <option>No games available</option>
+                                            ) : (
+                                                games.map(game => (
+                                                    <option key={game.id} value={game.name}>
+                                                        {game.displayName}
+                                                    </option>
+                                                ))
+                                            )}
                                         </select>
                                     </div>
                                 </div>

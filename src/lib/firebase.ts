@@ -4,13 +4,13 @@ import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
 import { getAnalytics, isSupported } from 'firebase/analytics'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDUp66xjZbk-e_ej9s9EwRflV03fDVVDQU",
-  authDomain: "diuec-1.firebaseapp.com",
-  projectId: "diuec-1",
-  storageBucket: "diuec-1.firebasestorage.app",
-  messagingSenderId: "501548933013",
-  appId: "1:501548933013:web:a027a0f7111893a57aa09c",
-  measurementId: "G-XDFYZSCBJP"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDUp66xjZbk-e_ej9s9EwRflV03fDVVDQU",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "diuec-1.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "diuec-1",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "diuec-1.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "501548933013",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:501548933013:web:a027a0f7111893a57aa09c",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-XDFYZSCBJP"
 }
 
 // Initialize Firebase
@@ -32,8 +32,8 @@ if (typeof window !== 'undefined') {
 }
 
 // Initialize Analytics and export it conditionally
-export const analytics = typeof window !== 'undefined' 
-  ? isSupported().then(yes => yes ? getAnalytics(app) : null) 
+export const analytics = typeof window !== 'undefined'
+  ? isSupported().then(yes => yes ? getAnalytics(app) : null)
   : null
 
 export default app 

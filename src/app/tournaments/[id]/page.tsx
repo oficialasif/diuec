@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { getTournament, getTournamentMatches, registerForTournament, getMyTeams, generateBracket } from '@/lib/services'
+import { getTournament, getTournamentMatches, registerForTournament, getMyTeams, generateBracket, updateMatchResult } from '@/lib/services'
 import { Tournament, Match, Team } from '@/lib/models'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/shared/ui/button'
-import { Trophy, Users, Calendar, Shield, Swords } from 'lucide-react'
+import { Trophy, Users, Calendar, Shield, Swords, Edit2, X, Save } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 
@@ -19,6 +19,7 @@ export default function TournamentDetailsPage() {
     const [selectedTeam, setSelectedTeam] = useState<string>('')
     const [loading, setLoading] = useState(true)
     const [registering, setRegistering] = useState(false)
+    const [editingMatch, setEditingMatch] = useState<Match | null>(null)
 
     const tournamentId = params?.id as string
 
@@ -75,6 +76,24 @@ export default function TournamentDetailsPage() {
             toast.error(error.message)
         }
     }
+
+    const handleUpdateMatch = async () => {
+        if (!editingMatch) return
+        try {
+            await updateMatchResult(editingMatch.id, editingMatch.scoreA || 0, editingMatch.scoreB || 0, editingMatch.winnerId || null)
+            toast.success('Match updated')
+            setEditingMatch(null)
+            // Refresh matches
+            const m = await getTournamentMatches(tournamentId)
+            setMatches(m)
+        } catch (e: any) {
+            toast.error('Failed to update match')
+        }
+    }
+
+    // ...
+
+
 
     if (loading) return <div className="text-center py-20">Loading...</div>
     if (!tournament) return <div className="text-center py-20">Tournament not found</div>
@@ -158,26 +177,37 @@ export default function TournamentDetailsPage() {
                                 ) : tournament.type === 'ELIMINATION' ? (
                                     <div className="grid gap-4">
                                         {matches.map(match => (
-                                            <div key={match.id} className="bg-black p-4 rounded border border-zinc-800 flex justify-between items-center">
-                                                <div className="font-mono text-gray-500">Match #{match.matchNumber}</div>
+                                            <div key={match.id} className="relative bg-black p-4 rounded border border-zinc-800 flex justify-between items-center group">
+                                                <div className="font-mono text-gray-500 w-20">Match #{match.matchNumber}</div>
                                                 <div className="flex-1 px-8">
-                                                    <div className="flex justify-between items-center p-2 rounded hover:bg-zinc-900/50">
+                                                    <div className={`flex justify-between items-center p-2 rounded ${match.winnerId === match.teamAId ? 'bg-green-900/10 border border-green-900/30' : 'hover:bg-zinc-900/50'}`}>
                                                         <span className={match.winnerId === match.teamAId ? 'text-green-400 font-bold' : ''}>
                                                             {match.teamAName || 'TBD'}
                                                         </span>
-                                                        <span className="font-mono">{match.scoreA}</span>
+                                                        <span className="font-mono text-xl">{match.scoreA}</span>
                                                     </div>
                                                     <div className="h-px bg-zinc-800 my-1"></div>
-                                                    <div className="flex justify-between items-center p-2 rounded hover:bg-zinc-900/50">
+                                                    <div className={`flex justify-between items-center p-2 rounded ${match.winnerId === match.teamBId ? 'bg-green-900/10 border border-green-900/30' : 'hover:bg-zinc-900/50'}`}>
                                                         <span className={match.winnerId === match.teamBId ? 'text-green-400 font-bold' : ''}>
                                                             {match.teamBName || 'TBD'}
                                                         </span>
-                                                        <span className="font-mono">{match.scoreB}</span>
+                                                        <span className="font-mono text-xl">{match.scoreB}</span>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <span className="text-xs px-2 py-1 bg-zinc-800 rounded text-gray-400">{match.status}</span>
+                                                <div className="w-24 text-right">
+                                                    <span className={`text-xs px-2 py-1 rounded ${match.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' : 'bg-zinc-800 text-gray-400'}`}>
+                                                        {match.status}
+                                                    </span>
                                                 </div>
+
+                                                {isAdmin && (
+                                                    <button
+                                                        onClick={() => setEditingMatch(match)}
+                                                        className="absolute top-2 right-2 p-1 bg-zinc-800 rounded hover:bg-violet-600 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -215,6 +245,61 @@ export default function TournamentDetailsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Admin Match Edit Modal */}
+            {editingMatch && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-md">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold">Update Match Result</h3>
+                            <button onClick={() => setEditingMatch(null)} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-black p-4 rounded-lg flex justify-between items-center gap-4">
+                                <div className="text-center flex-1">
+                                    <div className="text-sm text-gray-400 mb-1">Team A</div>
+                                    <div className="font-bold mb-2 truncate">{editingMatch.teamAName || 'TBD'}</div>
+                                    <input
+                                        type="number"
+                                        className="w-16 bg-zinc-800 border border-zinc-700 rounded p-1 text-center"
+                                        value={editingMatch.scoreA || 0}
+                                        onChange={e => setEditingMatch({ ...editingMatch, scoreA: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="text-xl font-bold text-gray-600">VS</div>
+                                <div className="text-center flex-1">
+                                    <div className="text-sm text-gray-400 mb-1">Team B</div>
+                                    <div className="font-bold mb-2 truncate">{editingMatch.teamBName || 'TBD'}</div>
+                                    <input
+                                        type="number"
+                                        className="w-16 bg-zinc-800 border border-zinc-700 rounded p-1 text-center"
+                                        value={editingMatch.scoreB || 0}
+                                        onChange={e => setEditingMatch({ ...editingMatch, scoreB: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Winner</label>
+                                <select
+                                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2"
+                                    value={editingMatch.winnerId || ''}
+                                    onChange={e => setEditingMatch({ ...editingMatch, winnerId: e.target.value || undefined })}
+                                >
+                                    <option value="">Select Winner</option>
+                                    {editingMatch.teamAId && <option value={editingMatch.teamAId}>{editingMatch.teamAName}</option>}
+                                    {editingMatch.teamBId && <option value={editingMatch.teamBId}>{editingMatch.teamBName}</option>}
+                                </select>
+                            </div>
+
+                            <Button onClick={handleUpdateMatch} className="w-full bg-green-600 hover:bg-green-700 mt-2">
+                                <Save className="w-4 h-4 mr-2" /> Save Result
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
