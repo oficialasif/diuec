@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "create-admin": "ts-node src/scripts/create-admin.ts"
@@ -29,7 +29,7 @@
     "framer-motion": "^12.5.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.479.0",
-    "next": "^16.1.1-canary.9",
+    "next": "^15.5.9",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.3",
@@ -50,7 +50,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^16.4.7",
     "eslint": "^9",
-    "eslint-config-next": "^16.1.1-canary.9",
+    "eslint-config-next": "^15.5.9",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"

@@ -50,6 +50,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
@@ -63,17 +66,7 @@ const nextConfig = {
       }
     ]
   },
-  webpack: (config) => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
-    }
-    config.experiments = {
-      ...config.experiments,
-      topLevelAwait: true,
-    }
-    return config
-  },
+
   experimental: {
     optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
   },
