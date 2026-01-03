@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Facebook, Mail, MessageCircle, MessageSquare } from 'lucide-react'
+import { Facebook, Mail, MessageCircle, Github } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -24,6 +25,26 @@ export default function Footer() {
             <p className="text-gray-300 text-sm md:text-base">
               The ultimate gaming community at Daffodil International University
             </p>
+            <div className="flex gap-4 pt-2">
+              <div className="relative w-16 h-16 bg-white/5 rounded-lg p-1">
+                <Image
+                  src="/images/footer_diu_ec_logo.png"
+                  alt="DIU EC Logo"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 64px, 64px"
+                />
+              </div>
+              <div className="relative w-16 h-16 bg-white/5 rounded-lg p-1">
+                <Image
+                  src="/images/footer_diu_logo.png"
+                  alt="DIU Logo"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 64px, 64px"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -31,18 +52,38 @@ export default function Footer() {
             <h4 className="text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-2">
               <li>
+                <Link href="/" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                  Home
+                </Link>
+              </li>
+              <li>
                 <Link href="/tournaments" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   Tournaments
                 </Link>
               </li>
               <li>
-                {/* <Link href="/community" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
-                  Community
-                </Link> */}
+                <Link href="/teams" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                  Teams
+                </Link>
               </li>
               <li>
                 <Link href="/leaderboard" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   Leaderboard
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link href="/chat" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                  Chat
                 </Link>
               </li>
             </ul>
@@ -53,17 +94,17 @@ export default function Footer() {
             <h4 className="text-lg font-semibold">Games</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/tournaments/pubg" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                <Link href="/games/pubg" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   PUBG
                 </Link>
               </li>
               <li>
-                <Link href="/tournaments/free-fire" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                <Link href="/games/free-fire" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   Free Fire
                 </Link>
               </li>
               <li>
-                <Link href="/tournaments/efootball" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
+                <Link href="/games/efootball" className="text-gray-300 hover:text-white transition-colors text-sm md:text-base">
                   eFootball
                 </Link>
               </li>
@@ -103,10 +144,20 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-violet-500/20">
-          <p className="text-center text-gray-300 text-sm">
+        <div className="mt-8 pt-8 border-t border-violet-500/20 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-gray-300 text-sm">
             © {new Date().getFullYear()} DIU Esports Community. All rights reserved.
           </p>
+          <a
+            href="https://github.com/oficialasif"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            <span>Developed by</span>
+            <Github className="w-4 h-4" />
+            <span className="font-medium">oficialasif</span>
+          </a>
         </div>
       </div>
     </footer>

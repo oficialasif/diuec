@@ -107,7 +107,9 @@ export async function updateTeamStats(
     didDraw: boolean = false,
     tournamentId?: string,
     tournamentName?: string,
-    tournamentPlacement?: number
+    tournamentPlacement?: number,
+    goalsFor: number = 0,
+    goalsAgainst: number = 0
 ): Promise<void> {
     try {
         const statsId = `${teamId}_${game}`
@@ -135,6 +137,9 @@ export async function updateTeamStats(
                     completedAt: new Date()
                 }] : [],
                 winRate: didWin ? 100 : 0,
+                totalGoalsFor: goalsFor,
+                totalGoalsAgainst: goalsAgainst,
+                goalDifference: goalsFor - goalsAgainst,
                 updatedAt: new Date()
             }
 
@@ -159,6 +164,9 @@ export async function updateTeamStats(
                 averagePoints: newAveragePoints,
                 highestPoints: newHighestPoints,
                 winRate: calculateWinRate(newWins, newMatchCount),
+                totalGoalsFor: increment(goalsFor),
+                totalGoalsAgainst: increment(goalsAgainst),
+                goalDifference: increment(goalsFor - goalsAgainst),
                 updatedAt: new Date()
             }
 
@@ -263,7 +271,10 @@ export async function calculateTournamentLeaderboard(
                     draws: teamStats.draws,
                     totalPoints: tournamentData.points,
                     averagePoints: teamStats.averagePoints,
-                    winRate: teamStats.winRate
+                    winRate: teamStats.winRate,
+                    goalsFor: teamStats.totalGoalsFor || 0,
+                    goalsAgainst: teamStats.totalGoalsAgainst || 0,
+                    goalDiff: teamStats.goalDifference || 0
                 })
             }
         }
@@ -321,7 +332,10 @@ export async function getGlobalLeaderboard(game: GameType, limit: number = 50): 
                 draws: teamStats.draws,
                 totalPoints: teamStats.totalPoints,
                 averagePoints: teamStats.averagePoints,
-                winRate: teamStats.winRate
+                winRate: teamStats.winRate,
+                goalsFor: teamStats.totalGoalsFor || 0,
+                goalsAgainst: teamStats.totalGoalsAgainst || 0,
+                goalDiff: teamStats.goalDifference || 0
             })
 
             if (teams.length >= limit) break
@@ -352,16 +366,39 @@ export async function updateAllMatchStats(
         const teamBWon = result.winner === 'teamB'
         const isDraw = result.winner === 'draw'
 
+        const isFootball = match.game === 'EFOOTBALL' || match.game === 'FIFA' || (match.tournamentName || '').toLowerCase().includes('football')
+
+        let pointsA = result.teamAStats.totalPoints
+        let pointsB = result.teamBStats.totalPoints
+        let gfA = 0
+        let gaA = 0
+        let gfB = 0
+        let gaB = 0
+
+        if (isFootball) {
+            gfA = pointsA
+            gaA = pointsB
+            gfB = pointsB
+            gaB = pointsA
+
+            if (teamAWon) { pointsA = 3; pointsB = 0; }
+            else if (teamBWon) { pointsA = 0; pointsB = 3; }
+            else { pointsA = 1; pointsB = 1; }
+        }
+
         // Update Team A stats
         await updateTeamStats(
             match.teamA.id,
             match.teamA.name,
             match.game,
-            result.teamAStats.totalPoints,
+            pointsA,
             teamAWon,
             isDraw,
             match.tournamentId,
-            match.tournamentName
+            match.tournamentName,
+            undefined,
+            gfA,
+            gaA
         )
 
         // Update Team B stats
@@ -369,11 +406,14 @@ export async function updateAllMatchStats(
             match.teamB.id,
             match.teamB.name,
             match.game,
-            result.teamBStats.totalPoints,
+            pointsB,
             teamBWon,
             isDraw,
             match.tournamentId,
-            match.tournamentName
+            match.tournamentName,
+            undefined,
+            gfB,
+            gaB
         )
 
         // Update player stats for Team A

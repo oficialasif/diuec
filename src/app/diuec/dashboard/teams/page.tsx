@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { getAllTeamsAdmin, getAllJoinRequests } from '@/lib/admin-services'
-import { acceptJoinRequest, rejectJoinRequest } from '@/lib/services'
-import { Shield, Users, CheckCircle, XCircle } from 'lucide-react'
+import { acceptJoinRequest, rejectJoinRequest, deleteTeam } from '@/lib/services'
+import { Shield, Users, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/shared/ui/button'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
@@ -50,6 +50,17 @@ export default function TeamsPage() {
         }
     }
 
+    const handleDeleteTeam = async (teamId: string) => {
+        try {
+            await deleteTeam(teamId)
+            toast.success('Team deleted successfully')
+            fetchData() // Refresh list
+        } catch (error: any) {
+            console.error('Delete error:', error)
+            toast.error(error.message || 'Failed to delete team')
+        }
+    }
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -70,8 +81,8 @@ export default function TeamsPage() {
                 <button
                     onClick={() => setActiveTab('teams')}
                     className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === 'teams'
-                            ? 'border-violet-500 text-white'
-                            : 'border-transparent text-gray-400 hover:text-white'
+                        ? 'border-violet-500 text-white'
+                        : 'border-transparent text-gray-400 hover:text-white'
                         }`}
                 >
                     All Teams ({teams.length})
@@ -79,8 +90,8 @@ export default function TeamsPage() {
                 <button
                     onClick={() => setActiveTab('requests')}
                     className={`px-4 py-2 font-medium transition-colors border-b-2 ${activeTab === 'requests'
-                            ? 'border-violet-500 text-white'
-                            : 'border-transparent text-gray-400 hover:text-white'
+                        ? 'border-violet-500 text-white'
+                        : 'border-transparent text-gray-400 hover:text-white'
                         }`}
                 >
                     Join Requests ({joinRequests.length})
@@ -91,34 +102,52 @@ export default function TeamsPage() {
             {activeTab === 'teams' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {teams.map((team) => (
-                        <div key={team.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800">
-                                    <Image
-                                        src={getValidImageUrl(team.logo, 'avatar')}
-                                        alt={team.name}
-                                        fill
-                                        className="object-cover"
-                                    />
+                        <div key={team.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800">
+                                        <Image
+                                            src={getValidImageUrl(team.logo, 'avatar')}
+                                            alt={team.name}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white">{team.name}</h3>
+                                        <p className="text-sm text-gray-400">[{team.tag}]</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-white">{team.name}</h3>
-                                    <p className="text-sm text-gray-400">[{team.tag}]</p>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-400">Game:</span>
+                                        <span className="text-white">{team.game}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-400">Members:</span>
+                                        <span className="text-white">{team.members?.length || 0}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-400">W/L:</span>
+                                        <span className="text-white">{team.stats?.wins || 0}/{team.stats?.losses || 0}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-400">Game:</span>
-                                    <span className="text-white">{team.game}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-400">Members:</span>
-                                    <span className="text-white">{team.members?.length || 0}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-400">W/L:</span>
-                                    <span className="text-white">{team.stats?.wins || 0}/{team.stats?.losses || 0}</span>
-                                </div>
+
+                            <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-end">
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                        if (confirm(`Are you sure you want to delete ${team.name}? This cannot be undone.`)) {
+                                            handleDeleteTeam(team.id)
+                                        }
+                                    }}
+                                    className="bg-red-900/20 text-red-500 hover:bg-red-900/40 hover:text-red-400 border border-red-900/50"
+                                >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete Team
+                                </Button>
                             </div>
                         </div>
                     ))}

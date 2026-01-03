@@ -188,16 +188,7 @@ export default function Dashboard() {
               {getGreeting()}, <span className="text-violet-400 font-semibold">{userProfile?.displayName?.split(' ')[0]}</span>
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="border-white/10 hover:bg-white/5 text-xs h-9">
-              <Settings className="w-3.5 h-3.5 mr-2" />
-              Settings
-            </Button>
-            <Button className="bg-violet-600 hover:bg-violet-700 text-xs h-9">
-              <Plus className="w-3.5 h-3.5 mr-2" />
-              Start Team
-            </Button>
-          </div>
+
         </div>
 
         {/* Stats Grid */}

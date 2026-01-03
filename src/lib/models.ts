@@ -88,10 +88,21 @@ export interface Tournament {
   image: string
   rules: string[]
 
+  // Links
+  facebookLink?: string
+  discordLink?: string
+  chatGroupLink?: string
+  rulebookLink?: string
+
   // For Battle Royale
   pointsSystem?: {
     killPoints: number
     placementPoints: number[] // Index 0 = 1st place, Index 1 = 2nd...
+  }
+  winner?: {
+    id: string
+    name: string
+    logo: string
   }
 }
 
@@ -101,15 +112,31 @@ export interface Match {
   type: 'ELIMINATION' | 'BATTLE_ROYALE'
   round: number // 1 = Ro16, 2 = QF, etc.
   matchNumber: number // 1 to N
+  group?: string // For Group Stage Matches (A, B, C...)
   status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'DISPUTE'
 
   // ELIMINATION (1v1)
+  teamA?: {
+    id: string
+    name: string
+    logo: string
+    captainId?: string
+  }
+  teamB?: {
+    id: string
+    name: string
+    logo: string
+    captainId?: string
+  }
+
+  // Legacy fields (optional)
   teamAId?: string
   teamAName?: string
   teamALogo?: string
   teamBId?: string
   teamBName?: string
   teamBLogo?: string
+
   scoreA?: number
   scoreB?: number
   winnerId?: string
@@ -126,14 +153,32 @@ export interface Match {
 
   startTime: Date
   proofImage?: string
+
+  // Submissions (Battle Royale)
+  submissions?: {
+    teamId: string
+    submittedBy: string
+    rank?: number
+    kills?: number
+    proofUrl: string
+    videoUrl?: string
+    submittedAt: Date
+  }[]
+
+  // eFootball Two-Leg Fields
+  leg?: 1 | 2
+  aggregateId?: string
+  isAggregate?: boolean
 }
 
 export interface TournamentRegistration {
   id: string
   tournamentId: string
-  teamId?: string // Null for SOLO if registering as individual
+  teamId: string | null // Null for SOLO if registering as individual
   userId: string // Captain or Individual
+  ingameName?: string // Custom name for Solo tournaments
   status: 'pending' | 'approved' | 'rejected'
+  group?: string
   createdAt: Date
 }
 
@@ -165,5 +210,31 @@ export interface JoinRequest {
   gameName: string // Specific game for the team
 
   status: 'pending' | 'accepted' | 'rejected'
+  createdAt: Date
+}
+
+export interface CommitteeMember {
+  id: string
+  name: string
+  role: string
+  image: string
+  order: number
+  createdAt: Date
+}
+
+export interface GalleryImage {
+  id: string
+  title: string
+  imageUrl: string
+  width?: number
+  height?: number
+  createdAt: Date
+}
+
+export interface Sponsor {
+  id: string
+  name: string
+  logo: string
+  website?: string
   createdAt: Date
 } 

@@ -33,6 +33,10 @@ export default function CreateTournamentPage() {
         endDate: '',
         description: '',
         rules: '',
+        facebookLink: '',
+        discordLink: '',
+        chatGroupLink: '',
+        rulebookLink: '',
     })
 
     useEffect(() => {
@@ -95,6 +99,13 @@ export default function CreateTournamentPage() {
                 prizePool: formData.prizePool,
                 entryFee: formData.entryFee,
                 image: bannerUrl, // Saving banner as image
+
+                // Links
+                facebookLink: formData.facebookLink,
+                discordLink: formData.discordLink,
+                chatGroupLink: formData.chatGroupLink,
+                rulebookLink: formData.rulebookLink,
+
                 maxTeams: Number(formData.maxTeams),
                 teamSize: formData.format === 'SOLO' ? 1 : formData.format === 'DUO' ? 2 : formData.format === 'TRIO' ? 3 : 4,
                 registeredTeams: 0,
@@ -290,6 +301,53 @@ export default function CreateTournamentPage() {
                                 value={formData.entryFee}
                                 onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })}
                                 placeholder="e.g. Free or ৳100"
+                                className="bg-zinc-900 border-zinc-800 text-white"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Social & Links */}
+                <div className="space-y-4">
+                    <h2 className="text-xl font-semibold text-white">Social & Links</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Rulebook Link (PDF/Doc)</label>
+                            <Input
+                                value={formData.rulebookLink}
+                                onChange={(e) => setFormData({ ...formData, rulebookLink: e.target.value })}
+                                placeholder="https://..."
+                                className="bg-zinc-900 border-zinc-800 text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Discord Server Link</label>
+                            <Input
+                                value={formData.discordLink}
+                                onChange={(e) => setFormData({ ...formData, discordLink: e.target.value })}
+                                placeholder="https://discord.gg/..."
+                                className="bg-zinc-900 border-zinc-800 text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Facebook Page/Event</label>
+                            <Input
+                                value={formData.facebookLink}
+                                onChange={(e) => setFormData({ ...formData, facebookLink: e.target.value })}
+                                placeholder="https://facebook.com/..."
+                                className="bg-zinc-900 border-zinc-800 text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Chat Group Link</label>
+                            <Input
+                                value={formData.chatGroupLink}
+                                onChange={(e) => setFormData({ ...formData, chatGroupLink: e.target.value })}
+                                placeholder="https://m.me/..."
                                 className="bg-zinc-900 border-zinc-800 text-white"
                             />
                         </div>

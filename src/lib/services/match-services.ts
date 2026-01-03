@@ -22,6 +22,7 @@ import {
     MatchWinner
 } from '@/lib/models/match-stats'
 import { calculateTeamPoints } from '@/lib/point-schemas'
+import { updateAllMatchStats } from './stats-services'
 
 // Create a new match
 export async function createMatch(
@@ -315,8 +316,15 @@ export async function approveMatchResult(
             notes: adminNotes || `Match approved by ${adminName}`
         })
 
-        // Trigger stats update (this will be called separately)
-        // await updateMatchStats(matchId)
+        // Check for Two-Leg Aggregate or Advance Winner
+        if (match.leg) {
+            await checkTwoLegProgress(match)
+        } else {
+            await advanceWinner(match)
+        }
+
+        // Trigger stats update
+        await updateAllMatchStats(matchId, match)
     } catch (error) {
         console.error('Error approving match result:', error)
         throw error
@@ -462,5 +470,107 @@ export async function getMatchAuditLogs(matchId: string): Promise<MatchAuditLog[
     } catch (error) {
         console.error('Error getting audit logs:', error)
         throw error
+    }
+}
+
+// --- Advancement Logic ---
+
+async function advanceWinner(match: MatchDetailed) {
+    if (!match.result?.winner) return
+
+    const winner = match.result.winner === 'teamA' ? match.teamA : match.teamB
+    const winnerTag = `Winner M${match.matchNumber}`
+
+    try {
+        const qA = query(collection(db, 'matches_detailed'), where('tournamentId', '==', match.tournamentId), where('teamA.name', '==', winnerTag))
+        const snapA = await getDocs(qA)
+        snapA.docs.forEach(async (d) => {
+            const m = d.data()
+            await updateDoc(d.ref, {
+                'teamA': { ...winner, captainId: winner.captainId || '' }, // Ensure full object
+                updatedAt: new Date()
+            })
+        })
+
+        const qB = query(collection(db, 'matches_detailed'), where('tournamentId', '==', match.tournamentId), where('teamB.name', '==', winnerTag))
+        const snapB = await getDocs(qB)
+        snapB.docs.forEach(async (d) => {
+            const m = d.data()
+            await updateDoc(d.ref, {
+                'teamB': { ...winner, captainId: winner.captainId || '' },
+                updatedAt: new Date()
+            })
+        })
+    } catch (e) {
+        console.error('Error advancing winner:', e)
+    }
+}
+
+async function checkTwoLegProgress(match: MatchDetailed) {
+    if (!match.aggregateId || !match.leg) return
+
+    // Fetch master aggregate match
+    const aggRef = doc(db, 'matches_detailed', match.aggregateId)
+    const aggSnap = await getDoc(aggRef)
+    if (!aggSnap.exists()) return
+
+    // Fetch sibling leg
+    // We can query by aggregateId
+    const q = query(collection(db, 'matches_detailed'), where('aggregateId', '==', match.aggregateId))
+    const snap = await getDocs(q)
+
+    const leg1 = snap.docs.find(d => d.data().leg === 1)?.data() as MatchDetailed
+    const leg2 = snap.docs.find(d => d.data().leg === 2)?.data() as MatchDetailed
+
+    if (leg1 && leg2 && leg1.status === 'approved' && leg2.status === 'approved' && leg1.result && leg2.result) {
+        // Calculate Aggregate
+        // Leg 1: A vs B
+        // Leg 2: B vs A (Swapped)
+        // Master: A vs B (Matches Leg 1 inputs usually)
+
+        const aggMatch = aggSnap.data() as MatchDetailed
+
+        // Sum scores relative to Master's Team A and Team B
+        // Master Team A = Leg 1 Team A = Leg 2 Team B
+
+        const scoreA_L1 = leg1.result.teamAStats.totalPoints // Team A (Home)
+        const scoreB_L1 = leg1.result.teamBStats.totalPoints // Team B (Away)
+
+        const scoreB_L2 = leg2.result.teamAStats.totalPoints // Team B (Home)
+        const scoreA_L2 = leg2.result.teamBStats.totalPoints // Team A (Away)
+
+        const totalA = scoreA_L1 + scoreA_L2
+        const totalB = scoreB_L1 + scoreB_L2
+
+        let winner: MatchWinner = 'draw'
+        if (totalA > totalB) winner = 'teamA'
+        else if (totalB > totalA) winner = 'teamB'
+
+        // Construct Result
+        // We reuse TeamMatchStats structure but put Aggregate Score in 'totalPoints'
+        const aggResult: MatchResult = {
+            winner,
+            submittedBy: 'system',
+            submittedByName: 'System',
+            submittedAt: new Date(),
+            proofUrl: 'aggregate',
+            teamAStats: { ...leg1.result.teamAStats, totalPoints: totalA },
+            teamBStats: { ...leg1.result.teamBStats, totalPoints: totalB },
+            disputed: false,
+            editHistory: [],
+            approvedBy: 'system',
+            approvedByName: 'System',
+            approvedAt: new Date(),
+            adminNotes: 'Aggregate Score Calculated'
+        }
+
+        await updateDoc(aggRef, {
+            status: 'approved',
+            result: aggResult,
+            updatedAt: new Date()
+        })
+
+        // Advance Winner of Aggregate
+        await advanceWinner({ ...aggMatch, result: aggResult })
     }
 }

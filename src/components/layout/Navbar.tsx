@@ -10,6 +10,9 @@ import { Button } from '@/components/shared/ui/button'
 import { User, LogOut, Settings, Trophy, Menu, X, ChevronRight, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+import { ProfileEditModal } from '@/components/profile/ProfileEditModal'
+import { MyTournamentsModal } from '@/components/tournaments/MyTournamentsModal'
+
 export default function Navbar() {
   const pathname = usePathname()
 
@@ -20,6 +23,8 @@ export default function Navbar() {
 
   const { user, userProfile, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showTournamentsModal, setShowTournamentsModal] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -51,6 +56,10 @@ export default function Navbar() {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
+    // Special check for Tournaments to enable active state for Game pages
+    if (href === '/tournaments') {
+      return pathname?.startsWith('/tournaments') || pathname?.startsWith('/games')
+    }
     return pathname?.startsWith(href)
   }
 
@@ -86,7 +95,7 @@ export default function Navbar() {
       ]
     },
     { href: '/teams', label: 'TEAMS' },
-    { href: '/about', label: 'ABOUT' },
+    { href: '/leaderboard', label: 'LEADERBOARD' },
   ]
 
   const authNavItems = user ? [
@@ -203,31 +212,26 @@ export default function Navbar() {
                   <p className="text-xs text-violet-400/70">{userProfile?.email}</p>
                 </div>
                 <div className="h-px bg-violet-500/20 my-2"></div>
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-violet-200 hover:bg-violet-600/20 hover:text-white transition-colors rounded-sm"
+
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-violet-200 hover:bg-violet-600/20 hover:text-white transition-colors rounded-sm w-full text-left"
                 >
                   <User className="w-4 h-4" />
                   Profile
-                </Link>
-                <Link
-                  href="/my-tournaments"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-violet-200 hover:bg-violet-600/20 hover:text-white transition-colors rounded-sm"
+                </button>
+                <button
+                  onClick={() => setShowTournamentsModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-violet-200 hover:bg-violet-600/20 hover:text-white transition-colors rounded-sm w-full text-left"
                 >
                   <Trophy className="w-4 h-4" />
                   My Tournaments
-                </Link>
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-violet-200 hover:bg-violet-600/20 hover:text-white transition-colors rounded-sm"
-                >
-                  <Settings className="w-4 h-4" />
-                  Settings
-                </Link>
+                </button>
+
                 <div className="h-px bg-violet-500/20 my-2"></div>
                 <button
                   onClick={() => signOut()}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors rounded-sm w-full"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors rounded-sm w-full text-left"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out
@@ -368,33 +372,30 @@ export default function Navbar() {
                       {item.label}
                     </Link>
                   ))}
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-3 py-3 text-base font-medium text-gray-300 hover:text-white transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      setShowProfileModal(true)
+                    }}
+                    className="flex items-center gap-3 py-3 text-base font-medium text-gray-300 hover:text-white transition-colors w-full text-left"
                   >
                     <User className="h-5 w-5" />
                     <span>Profile</span>
-                  </Link>
-                  <Link
-                    href="/my-tournaments"
-                    className="flex items-center gap-3 py-3 text-base font-medium text-gray-300 hover:text-white transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false)
+                      setShowTournamentsModal(true)
+                    }}
+                    className="flex items-center gap-3 py-3 text-base font-medium text-gray-300 hover:text-white transition-colors w-full text-left"
                   >
                     <Trophy className="h-5 w-5" />
                     <span>My Tournaments</span>
-                  </Link>
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-3 py-3 text-base font-medium text-gray-300 hover:text-white transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Settings className="h-5 w-5" />
-                    <span>Settings</span>
-                  </Link>
+                  </button>
+
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-3 py-3 text-base font-medium text-red-400 hover:text-red-300 transition-colors w-full"
+                    className="flex items-center gap-3 py-3 text-base font-medium text-red-400 hover:text-red-300 transition-colors w-full text-left"
                   >
                     <LogOut className="h-5 w-5" />
                     <span>Sign Out</span>
@@ -435,6 +436,14 @@ export default function Navbar() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onLogin={() => setShowAuthModal(false)}
+      />
+      <ProfileEditModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
+      <MyTournamentsModal
+        isOpen={showTournamentsModal}
+        onClose={() => setShowTournamentsModal(false)}
       />
     </header>
   )

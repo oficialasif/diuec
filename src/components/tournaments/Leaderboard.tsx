@@ -5,11 +5,20 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Target, TrendingUp, Award } from 'lucide-react'
 import { getGlobalLeaderboard, calculateTournamentLeaderboard } from '@/lib/services/stats-services'
-// ... (imports remain)
+import Image from 'next/image'
+import { getValidImageUrl } from '@/lib/utils/image'
+import { LeaderboardEntry, GameType } from '@/lib/models/match-stats'
+
+interface LeaderboardProps {
+    game: GameType
+    tournamentId?: string
+    limit?: number
+}
 
 export default function Leaderboard({ game, tournamentId, limit = 20 }: LeaderboardProps) {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
     const [loading, setLoading] = useState(true)
+    const isFootball = game === 'EFOOTBALL' || game === 'FIFA' || (game || '').toLowerCase().includes('football')
 
     useEffect(() => {
         fetchLeaderboard()
@@ -73,9 +82,20 @@ export default function Leaderboard({ game, tournamentId, limit = 20 }: Leaderbo
                             <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Team</th>
                             <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Matches</th>
                             <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">W/L/D</th>
+                            {isFootball ? (
+                                <>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">GF</th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">GA</th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">GD</th>
+                                </>
+                            ) : null}
                             <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Points</th>
-                            <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Avg</th>
-                            <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Win Rate</th>
+                            {!isFootball && (
+                                <>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Avg</th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Win Rate</th>
+                                </>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -133,7 +153,7 @@ export default function Leaderboard({ game, tournamentId, limit = 20 }: Leaderbo
                                     </div>
                                 </td>
 
-                                {/* Total Points */}
+                                {/* Points */}
                                 <td className="px-6 py-4 text-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <Target className="w-4 h-4 text-violet-400" />
@@ -141,20 +161,31 @@ export default function Leaderboard({ game, tournamentId, limit = 20 }: Leaderbo
                                     </div>
                                 </td>
 
-                                {/* Average Points */}
-                                <td className="px-6 py-4 text-center">
-                                    <span className="text-gray-400">{entry.averagePoints.toFixed(1)}</span>
-                                </td>
+                                {/* Football Stats */}
+                                {isFootball && (
+                                    <>
+                                        <td className="px-6 py-4 text-center text-gray-400">{entry.goalsFor || 0}</td>
+                                        <td className="px-6 py-4 text-center text-gray-400">{entry.goalsAgainst || 0}</td>
+                                        <td className="px-6 py-4 text-center font-bold text-gray-300">{entry.goalDiff || 0}</td>
+                                    </>
+                                )}
 
-                                {/* Win Rate */}
-                                <td className="px-6 py-4 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <TrendingUp className={`w-4 h-4 ${entry.winRate >= 50 ? 'text-green-400' : 'text-gray-400'}`} />
-                                        <span className={`font-semibold ${entry.winRate >= 50 ? 'text-green-400' : 'text-gray-400'}`}>
-                                            {entry.winRate.toFixed(1)}%
-                                        </span>
-                                    </div>
-                                </td>
+                                {/* Average Points + Win Rate (Non-Football) */}
+                                {!isFootball && (
+                                    <>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="text-gray-400">{entry.averagePoints.toFixed(1)}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <TrendingUp className={`w-4 h-4 ${entry.winRate >= 50 ? 'text-green-400' : 'text-gray-400'}`} />
+                                                <span className={`font-semibold ${entry.winRate >= 50 ? 'text-green-400' : 'text-gray-400'}`}>
+                                                    {entry.winRate.toFixed(1)}%
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </>
+                                )}
                             </tr>
                         ))}
                     </tbody>

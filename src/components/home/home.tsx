@@ -5,13 +5,18 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 // import { Button } from "@/components/ui/button"
 // import { MessageSquare, Heart, Share2, Send } from "lucide-react"
-import PhotoGallery from './PhotoGallery'
+import {
+  getCommitteeMembers,
+  getGalleryImages,
+  getSponsors
+} from '@/lib/services'
+import { CommitteeMember, GalleryImage, Sponsor } from '@/lib/models'
 import { AuthModal } from "@/components/auth/auth"
 import { useAuth } from '@/contexts/auth-context'
-<PhotoGallery />
-
-{/* Latest Updates Removed */ }
-{/* <LatestUpdates /> */ }
+import Link from 'next/link'
+// <PhotoGallery /> // Removed static import usage
+// {/* Latest Updates Removed */ }
+// {/* <LatestUpdates /> */ }
 
 // Typewriter Effect Component
 const TypewriterEffect = () => {
@@ -66,32 +71,6 @@ const TypewriterEffect = () => {
   )
 }
 
-// Sponsors Data
-const sponsors = [
-  { name: "Sponsor 1", logo: "/images/sponsors/logo-green.png" },
-  { name: "Sponsor 2", logo: "/images/sponsors/logo-pink.png" },
-  { name: "Sponsor 3", logo: "/images/sponsors/logo-green-splash.png" },
-] as const
-
-// Founders Data
-const founders = [
-  {
-    name: "Founder",
-    role: "CEO & Founder",
-    image: "/images/founder/founder.jpg"
-  },
-  {
-    name: "Co-Founder",
-    role: "CTO & Co-Founder",
-    image: "/images/founder/co founder.jpg"
-  },
-  {
-    name: "Associate Co-Founder",
-    role: "COO & Associate Co-Founder",
-    image: "/images/founder/acofoinder.jpg"
-  }
-]
-
 export default function Home() {
   const { user, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -101,6 +80,34 @@ export default function Home() {
     teams: 0,
     games: 0,
   })
+
+  // Dynamic Content State
+  const [committee, setCommittee] = useState<CommitteeMember[]>([])
+  const [gallery, setGallery] = useState<GalleryImage[]>([])
+  const [sponsors, setSponsors] = useState<Sponsor[]>([])
+  const [loading, setLoading] = useState(true)
+  const [committeeHovered, setCommitteeHovered] = useState(false)
+  const [sponsorsHovered, setSponsorsHovered] = useState(false)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [cData, gData, sData] = await Promise.all([
+          getCommitteeMembers(),
+          getGalleryImages(),
+          getSponsors()
+        ])
+        setCommittee(cData)
+        setGallery(gData)
+        setSponsors(sData)
+      } catch (error) {
+        console.error("Failed to load home content", error)
+      } finally { // Stop loading anyway
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -197,65 +204,143 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Founders Section */}
-      <section className="py-16 bg-black">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-white">Meet Our Founders</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {founders.map((founder, index) => (
-              <motion.div
-                key={founder.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-                className="text-center"
-              >
-                <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-violet-500">
-                  <Image
-                    src={founder.image}
-                    alt={founder.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-violet-200 mb-2">{founder.name}</h3>
-                <p className="text-gray-400">{founder.role}</p>
-              </motion.div>
-            ))}
-          </div>
+      {/* Committee Members Marquee Section */}
+      <section className="py-16 bg-black border-t border-white/5 overflow-hidden">
+        <div className="container mx-auto px-4 mb-12">
+          <h2 className="text-3xl font-bold text-center mb-2 text-white">Committee Members 2026</h2>
+          <p className="text-center text-gray-400">The team driving DIU Esports forward</p>
         </div>
+
+        {committee.length > 0 ? (
+          <div
+            className="relative w-full overflow-hidden bg-black"
+            onMouseEnter={() => setCommitteeHovered(true)}
+            onMouseLeave={() => setCommitteeHovered(false)}
+          >
+            {/* Gradient Masks */}
+            <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+            <div className="absolute top-0 bottom-0 right-0 w-32 bg-gradient-to-l from-black via-black/80 to-transparent z-10" />
+
+            <motion.div
+              className="flex w-max items-center"
+              animate={committeeHovered ? {} : { x: "-50%" }}
+              transition={{
+                repeat: Infinity,
+                ease: "linear",
+                duration: Math.max(30, committee.length * 5), // Smoother, slower duration
+              }}
+            >
+              {/* Render content twice for seamless loop */}
+              {[...Array(2)].map((_, groupIndex) => (
+                <div key={groupIndex} className="flex shrink-0">
+                  {/* Ensure enough items to fill screen by repeating fast */}
+                  {Array.from({ length: Math.ceil(15 / committee.length) }).flatMap(() => committee).map((member, idx) => (
+                    <div
+                      key={`${groupIndex}-${member.id}-${idx}`}
+                      className="w-64 flex-shrink-0 mx-4" // Use margin instead of gap for easier control
+                    >
+                      <div className="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800/50 backdrop-blur-sm flex flex-col items-center text-center group hover:bg-zinc-800 transition-colors">
+                        <div className="relative w-28 h-28 rounded-full overflow-hidden mb-4 border-2 border-violet-500/20 group-hover:border-violet-500/80 transition-all shadow-[0_0_15px_rgba(139,92,246,0.1)] group-hover:shadow-[0_0_25px_rgba(139,92,246,0.4)]">
+                          <Image src={member.image} alt={member.name} fill className="object-cover" />
+                        </div>
+                        <h3 className="font-bold text-lg text-white mb-1 truncate w-full">{member.name}</h3>
+                        <p className="text-violet-400 text-sm truncate w-full font-medium">{member.role}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-12">Loading committee members...</div>
+        )}
       </section>
 
-      <PhotoGallery />
+      {/* Dynamic Gallery Section - Pinterest Style */}
+      <section className="py-16 bg-black border-y border-white/5">
+        <div className="container mx-auto px-4 mb-12 text-center">
+          <h2 className="text-3xl font-bold text-white mb-2">Moments</h2>
+          <p className="text-gray-400">Captured memories from our events</p>
+        </div>
+
+        {gallery.length > 0 ? (
+          <div className="container mx-auto px-4">
+            <div className="columns-1 md:columns-3 lg:columns-4 gap-4 space-y-4">
+              {gallery.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative rounded-xl overflow-hidden group bg-zinc-900 break-inside-avoid mb-4"
+                >
+                  <div className="relative w-full">
+                    {/* Use responsive sizing logic or fixed aspect ratio if preferred, but for Pinterest style, intrinsic height is best. 
+                                    Since Next/Image needs dimensions or fill, 'fill' with parent aspect ratio is tricky for mixed sizes without data.
+                                    For true masonry with unknown sizes, we often use width:100% and height:auto. 
+                                    Using 'response' intrinsic size requires keeping width/height in DB. 
+                                    Fallback: Use 'fill' but give container a random-ish aspect ratio or use specific class if data lacks it.
+                                    For now, we will use a simple aspect ratio trick or assume images are uploaded with standard sizes. 
+                                    Actually, best for NextJS generic masonry is 'width: auto', 'height: auto' <img> tag or carefully sized wrapper.
+                                    Let's use a standard <img> for masonry flexibility if we don't have dimensions, OR assume fill with a set height class.
+                                    User asked for "Pinterest layout style".
+                                */}
+                    <img
+                      src={img.imageUrl}
+                      alt={img.title || 'Gallery Image'}
+                      className="w-full h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                      <p className="text-white font-medium">{img.title}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-12">No images in gallery yet.</div>
+        )}
+      </section>
 
       {/* Sponsors Section */}
       <section className="py-16 bg-black/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Our Sponsors</h2>
-          <div className="sponsor-scroll-container">
-            <div className="sponsor-scroll-track">
-              {[...Array(2)].map((_, groupIndex) => (
-                <div key={`group-${groupIndex}`} className="flex gap-24">
-                  {sponsors.map((sponsor, index) => (
-                    <motion.div
-                      key={`${sponsor.name}-${groupIndex}-${index}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="sponsor-logo"
-                    >
-                      <Image
-                        src={sponsor.logo}
-                        alt={sponsor.name}
-                        fill
-                        className="object-contain p-2"
-                      />
-                    </motion.div>
+
+          {sponsors.length > 0 ? (
+            <div
+              className="sponsor-scroll-container overflow-hidden relative"
+              onMouseEnter={() => setSponsorsHovered(true)}
+              onMouseLeave={() => setSponsorsHovered(false)}
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+
+              <div className="flex w-full overflow-hidden">
+                <motion.div
+                  className="flex w-max items-center"
+                  animate={sponsorsHovered ? {} : { x: "-50%" }}
+                  transition={{
+                    repeat: Infinity,
+                    ease: "linear",
+                    duration: Math.max(20, sponsors.length * 5),
+                  }}
+                >
+                  {[...Array(2)].map((_, groupIndex) => (
+                    <div key={groupIndex} className="flex shrink-0">
+                      {Array.from({ length: Math.ceil(15 / sponsors.length) }).flatMap(() => sponsors).map((sponsor, idx) => (
+                        <div key={`${groupIndex}-${sponsor.id}-${idx}`} className="relative w-32 h-20 flex-shrink-0 mx-12 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100">
+                          <Image src={sponsor.logo} alt={sponsor.name} fill className="object-contain" />
+                        </div>
+                      ))}
+                    </div>
                   ))}
-                </div>
-              ))}
+                </motion.div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center text-gray-500">Become a sponsor today!</div>
+          )}
         </div>
       </section>
     </div>

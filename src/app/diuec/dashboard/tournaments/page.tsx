@@ -147,9 +147,14 @@ export default function TournamentsPage() {
                                     Edit
                                 </Button>
                             </Link>
-                            <Link href={`/brackets?tournamentId=${tournament.id}`}>
-                                <Button variant="ghost" size="sm" title="View Brackets">
+                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}/brackets`}>
+                                <Button variant="ghost" size="sm" title="Manage Brackets">
                                     <Swords className="w-4 h-4" />
+                                </Button>
+                            </Link>
+                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}/groups`}>
+                                <Button variant="ghost" size="sm" title="Manage Groups">
+                                    <Users className="w-4 h-4" />
                                 </Button>
                             </Link>
                             <Button

@@ -14,9 +14,12 @@ interface SymmetricBracketProps {
 }
 
 export const SymmetricBracket = ({ matches }: SymmetricBracketProps) => {
+    // Filter out individual legs, keep only standard matches or aggregate parents
+    const visibleMatches = matches.filter(m => !m.aggregateId || (m as any).isAggregate)
+
     // 1. Organize matches by Round
     const rounds: Record<number, MatchDetailed[]> = {}
-    matches.forEach(m => {
+    visibleMatches.forEach(m => {
         const r = (m as any).round || 1
         if (!rounds[r]) rounds[r] = []
         rounds[r].push(m)
@@ -163,6 +166,7 @@ const MatchCard = ({ match, side, isFinal }: { match: MatchDetailed, side: 'left
                     ) : (
                         <span className="opacity-50">Unscheduled</span>
                     )}
+                    {(match as any).isAggregate && <span className="ml-1 text-[7px] text-blue-400 border border-blue-400/30 px-1 rounded">AGG</span>}
                 </div>
                 {isAdmin && !isEditing && (
                     <button

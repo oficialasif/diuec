@@ -1,6 +1,6 @@
 // Match Status Types
 export type MatchStatus = 'scheduled' | 'played' | 'submitted' | 'confirmed' | 'disputed' | 'approved' | 'rejected'
-export type GameType = 'PUBG' | 'Valorant' | 'MLBB' | 'CS2' | 'Free Fire'
+export type GameType = 'PUBG' | 'Valorant' | 'MLBB' | 'CS2' | 'Free Fire' | 'EFOOTBALL' | 'FIFA'
 export type MatchWinner = 'teamA' | 'teamB' | 'draw'
 
 // Player Match Statistics
@@ -122,6 +122,11 @@ export interface MatchDetailed {
     createdBy: string
     createdAt: Date
     updatedAt: Date
+
+    // E-Football / Two-Leg support
+    leg?: 1 | 2
+    aggregateId?: string
+    isAggregate?: boolean
 }
 
 // Player Aggregate Statistics (per game)
@@ -187,6 +192,11 @@ export interface TeamStatsDetailed {
     // Calculated
     winRate: number // (wins / matchesPlayed) * 100
 
+    // E-Football Stats
+    totalGoalsFor?: number
+    totalGoalsAgainst?: number
+    goalDifference?: number
+
     // Rankings
     currentRank?: number
 
@@ -230,6 +240,11 @@ export interface LeaderboardEntry {
     averagePoints: number
 
     winRate: number
+
+    // E-Football Stats
+    goalsFor?: number
+    goalsAgainst?: number
+    goalDiff?: number
 
     // Head-to-head (for tie-breaking)
     headToHead?: {

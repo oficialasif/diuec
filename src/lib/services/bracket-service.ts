@@ -123,11 +123,21 @@ export const generateBracket = async (tournamentId: string) => {
 
                     if (teamA) {
                         const tId = teamA.teamId || teamA.userId;
-                        const tData = teamCache[tId] || {};
+                        let tData: any = {};
+
+                        // If teamId exists (Team mode), fetch team data
+                        // If no teamId (Solo mode), use registration data
+                        if (teamA.teamId) {
+                            tData = teamCache[teamA.teamId] || {};
+                        } else {
+                            // Solo Mode: Use registered ingameName or fallback to userDisplayName (if we had it in reg, but we don't store it yet so simple fallback)
+                            tData = { name: teamA.ingameName || 'Player' };
+                        }
+
                         console.log(`R1 Match ${i + 1} Team A:`, tId, tData.name);
                         matchData.teamA = {
                             id: tId,
-                            name: tData.name || 'Unknown Team',
+                            name: tData.name || 'Unknown',
                             logo: tData.logo || '',
                             captainId: tData.captainId || tId
                         };
@@ -135,11 +145,18 @@ export const generateBracket = async (tournamentId: string) => {
 
                     if (teamB) {
                         const tId = teamB.teamId || teamB.userId;
-                        const tData = teamCache[tId] || {};
+                        let tData: any = {};
+
+                        if (teamB.teamId) {
+                            tData = teamCache[teamB.teamId] || {};
+                        } else {
+                            tData = { name: teamB.ingameName || 'Player' };
+                        }
+
                         console.log(`R1 Match ${i + 1} Team B:`, tId, tData.name);
                         matchData.teamB = {
                             id: tId,
-                            name: tData.name || 'Unknown Team',
+                            name: tData.name || 'Unknown',
                             logo: tData.logo || '',
                             captainId: tData.captainId || tId
                         };

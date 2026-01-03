@@ -211,7 +211,7 @@ async function generateEliminationBracket(tournament: Tournament, teamIds: strin
             teamA: { id: teamA !== 'BYE' ? teamA : 'BYE', name: teamA !== 'BYE' ? 'TBD' : 'BYE' }, // We'll fix names later
             teamB: { id: teamB !== 'BYE' ? teamB : 'BYE', name: teamB !== 'BYE' ? 'TBD' : 'BYE' },
             status: status,
-            result: winnerId ? { winner: category(winnerId, teamA, teamB), teamAStats: { totalPoints: 0 }, teamBStats: { totalPoints: 0 } } : null,
+            result: winnerId ? { winner: winnerId === teamA ? 'teamA' : 'teamB', teamAStats: { totalPoints: 0 }, teamBStats: { totalPoints: 0 } } : null,
             createdAt: new Date(),
             scheduledAt: tournament.startDate
         }

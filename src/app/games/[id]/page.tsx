@@ -16,6 +16,7 @@ import { registerForTournament, getMyTeams } from '@/lib/services'
 import { TournamentDetailsModal } from '@/components/tournaments/TournamentDetailsModal'
 import { getValidImageUrl } from '@/lib/utils/image'
 import { TeamSelectionModal } from '@/components/tournaments/TeamSelectionModal'
+import { GAME_RULES } from '@/lib/data/game-rules'
 
 export default function GameHubPage() {
     const params = useParams()
@@ -266,6 +267,43 @@ export default function GameHubPage() {
                             <p className="text-xs text-gray-600 italic">Leaderboard coming soon...</p>
                         </div>
                     </div>
+
+                    {/* Standard Rules Section */}
+                    {gameInfo && GAME_RULES[gameInfo.name] && (
+                        <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                            <h3 className="font-bold mb-4 flex items-center gap-2">
+                                <Swords className="text-violet-500 w-5 h-5" /> Standard Rules
+                            </h3>
+                            <div className="space-y-4 text-sm text-gray-400">
+                                <div>
+                                    <p className="font-semibold text-gray-300 mb-1">Format</p>
+                                    <p>{GAME_RULES[gameInfo.name].format}</p>
+                                </div>
+
+                                {GAME_RULES[gameInfo.name].matchRules.length > 0 && (
+                                    <div>
+                                        <p className="font-semibold text-gray-300 mb-1">Match Settings</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {GAME_RULES[gameInfo.name].matchRules.map((rule, i) => (
+                                                <li key={i}>{rule}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {GAME_RULES[gameInfo.name].pointSystem && (
+                                    <div>
+                                        <p className="font-semibold text-gray-300 mb-1">Point System</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {GAME_RULES[gameInfo.name].pointSystem!.map((point, i) => (
+                                                <li key={i}>{point}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -283,6 +321,7 @@ export default function GameHubPage() {
                 tournament={selectedTournament}
                 onRegister={() => { setIsDetailsModalOpen(false); handleRegisterClick(selectedTournament!); }}
                 isRegistered={selectedTournament ? registeredTournaments.includes(selectedTournament.id) : false}
+                onDashboard={() => window.location.href = '/tournaments'}
             />
         </div>
     )

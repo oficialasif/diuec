@@ -1,0 +1,2 @@
+// Export from bracket-services
+export { generateBracket } from './services/bracket-services'
