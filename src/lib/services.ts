@@ -1441,3 +1441,6 @@ async function advanceBracketWinner(completedMatch: any) {
     })
   }
 }
+
+// Export from bracket-services
+export { generateBracket } from './services/bracket-services'
