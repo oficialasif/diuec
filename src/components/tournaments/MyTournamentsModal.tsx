@@ -23,6 +23,7 @@ export function MyTournamentsModal({ isOpen, onClose }: MyTournamentsModalProps)
     const [loading, setLoading] = useState(true)
     const [registrations, setRegistrations] = useState<EnrichedRegistration[]>([])
     const { user } = useAuth()
+    const modalRef = useRef<HTMLDivElement>(null)
     const getMillis = (d: any) => {
         if (!d) return 0
         if (d.seconds) return d.seconds * 1000
@@ -45,7 +46,7 @@ export function MyTournamentsModal({ isOpen, onClose }: MyTournamentsModalProps)
                         return { ...reg, tournamentDetails: tournament }
                     } catch (e) {
                         console.error(`Failed to load tournament ${reg.tournamentId}`, e)
-                        return reg
+                        return { ...reg, tournamentDetails: null }
                     }
                 }))
 
