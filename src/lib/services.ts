@@ -545,4 +545,5 @@ export async function updateMatchResult(matchId: string, scoreA: number, scoreB:
     winnerId,
     status: 'COMPLETED'
   })
-} 
+}
+export * from './services/bracket-service'

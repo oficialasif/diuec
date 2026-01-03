@@ -121,7 +121,7 @@ export default function TeamsPage() {
                       <div>
                         <div className="text-xs text-gray-500 uppercase">Win Rate</div>
                         <div className="font-semibold text-green-400">
-                          {team.stats.matchesPlayed > 0
+                          {team.stats?.matchesPlayed > 0
                             ? Math.round((team.stats.wins / team.stats.matchesPlayed) * 100) + '%'
                             : '-'}
                         </div>

@@ -99,7 +99,7 @@ export default function TeamDetailsPage() {
                                     <Users className="w-4 h-4 text-blue-500" /> {team.members.length} Members
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <Trophy className="w-4 h-4 text-yellow-500" /> {team.stats.wins} Wins
+                                    <Trophy className="w-4 h-4 text-yellow-500" /> {team.stats?.wins || 0} Wins
                                 </span>
                             </div>
                         </div>
@@ -181,20 +181,20 @@ export default function TeamDetailsPage() {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center py-2 border-b border-zinc-800">
                                 <span className="text-gray-400">Matches Played</span>
-                                <span className="font-mono">{team.stats.matchesPlayed}</span>
+                                <span className="font-mono">{team.stats?.matchesPlayed || 0}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-zinc-800">
                                 <span className="text-gray-400">Wins</span>
-                                <span className="font-mono text-green-400">{team.stats.wins}</span>
+                                <span className="font-mono text-green-400">{team.stats?.wins || 0}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-zinc-800">
                                 <span className="text-gray-400">Losses</span>
-                                <span className="font-mono text-red-400">{team.stats.losses}</span>
+                                <span className="font-mono text-red-400">{team.stats?.losses || 0}</span>
                             </div>
                             <div className="flex justify-between items-center py-2">
                                 <span className="text-gray-400">Win Rate</span>
                                 <span className="font-bold text-violet-400">
-                                    {team.stats.matchesPlayed > 0
+                                    {team.stats?.matchesPlayed > 0
                                         ? Math.round((team.stats.wins / team.stats.matchesPlayed) * 100) + '%'
                                         : '0%'}
                                 </span>
