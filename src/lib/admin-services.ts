@@ -6,16 +6,29 @@ export async function getAllUsers(limitCount = 50, lastDoc?: DocumentSnapshot) {
     try {
         let q = query(
             collection(db, 'users'),
-            orderBy('createdAt', 'desc'),
             firestoreLimit(limitCount)
         )
 
         if (lastDoc) {
+            // Note: startAfter requires sorting to be consistent with the query index. 
+            // If we remove orderBy from query, pagination based on 'lastDoc' might behave differently 
+            // if we rely on implicit document ID order.
+            // However, to fix the "missing users" issue, fetching by ID or default order is safer.
+            // For simple Admin UI with limited users (6), fetching all is fine.
+            // Usage of 'startAfter' implies we need a sort order. 
+            // Let's stick to default (ID) or client side sort for small datasets.
             q = query(q, startAfter(lastDoc))
         }
 
         const snapshot = await getDocs(q)
+        // Sort in memory to keep 'recent' first, handling null createdAt
         const users = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))
+            .sort((a: any, b: any) => {
+                const da = a.createdAt?.toDate ? a.createdAt.toDate() : (a.createdAt || new Date(0));
+                const db = b.createdAt?.toDate ? b.createdAt.toDate() : (b.createdAt || new Date(0));
+                return db - da; // Descending
+            })
+
         const lastVisible = snapshot.docs[snapshot.docs.length - 1]
 
         return { users, lastVisible }

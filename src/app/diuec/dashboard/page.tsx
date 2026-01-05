@@ -64,23 +64,55 @@ export default function AdminDashboard() {
     const fetchRecentActivity = async () => {
         try {
             // Fetch recent users
-            const usersQuery = query(
-                collection(db, 'users'),
-                orderBy('createdAt', 'desc'),
-                limit(5)
-            )
-            const usersSnap = await getDocs(usersQuery)
+            const [usersSnap, tournamentsSnap, teamsSnap, postsSnap] = await Promise.all([
+                getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(5))),
+                getDocs(query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'), limit(5))),
+                getDocs(query(collection(db, 'teams'), orderBy('createdAt', 'desc'), limit(5))),
+                getDocs(query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(5)))
+            ])
 
-            const activities = usersSnap.docs.map(doc => {
+            const activities: any[] = []
+
+            usersSnap.forEach(doc => {
                 const data = doc.data()
-                return {
+                activities.push({
                     type: 'user',
-                    message: `New user registered: ${data.displayName}`,
-                    time: data.createdAt
-                }
+                    message: `New user: ${data.displayName || 'Unknown'}`,
+                    time: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                })
             })
 
-            setRecentActivity(activities)
+            tournamentsSnap.forEach(doc => {
+                const data = doc.data()
+                activities.push({
+                    type: 'tournament',
+                    message: `Tournament created: ${data.title}`,
+                    time: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                })
+            })
+
+            teamsSnap.forEach(doc => {
+                const data = doc.data()
+                activities.push({
+                    type: 'team',
+                    message: `New team registered: ${data.name}`,
+                    time: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                })
+            })
+
+            postsSnap.forEach(doc => {
+                const data = doc.data()
+                activities.push({
+                    type: 'post',
+                    message: `New post by ${data.authorName}`,
+                    time: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now())
+                })
+            })
+
+            // Sort consolidated activities by time desc
+            activities.sort((a, b) => b.time - a.time)
+
+            setRecentActivity(activities.slice(0, 10))
         } catch (error) {
             console.error('Error fetching activity:', error)
         }
@@ -155,7 +187,7 @@ export default function AdminDashboard() {
                         <div key={idx} className="flex items-center justify-between py-3 border-b border-zinc-800 last:border-0">
                             <p className="text-sm text-gray-300">{activity.message}</p>
                             <span className="text-xs text-gray-500">
-                                {activity.time?.toDate?.()?.toLocaleDateString() || 'Recently'}
+                                {activity.time.toLocaleDateString()} {activity.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         </div>
                     )) : (
