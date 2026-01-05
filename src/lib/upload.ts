@@ -14,6 +14,11 @@ export async function uploadImage(file: File, folder?: string): Promise<string> 
         body: JSON.stringify({ paramsToSign })
     })
 
+    if (!signResponse.ok) {
+        const errorData = await signResponse.json()
+        throw new Error(errorData.error || 'Failed to sign upload request')
+    }
+
     const { signature, apiKey, cloudName } = await signResponse.json()
 
     const formData = new FormData()
