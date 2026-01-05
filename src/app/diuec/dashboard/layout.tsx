@@ -2,6 +2,8 @@
 
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
+import CustomCursor from '@/components/admin/CustomCursor'
+import '@/styles/custom-cursor.css'
 
 export default function AdminDashboardLayout({
     children,
@@ -9,7 +11,10 @@ export default function AdminDashboardLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex h-screen bg-black text-white overflow-hidden">
+        <div className="flex h-screen bg-black text-white overflow-hidden admin-cursor-area">
+            {/* Custom Cursor */}
+            <CustomCursor />
+
             {/* Sidebar */}
             <AdminSidebar />
 

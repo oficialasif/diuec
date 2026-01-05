@@ -1,0 +1,251 @@
+/* Custom Cursor Styles */
+.custom-cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-2px, -2px);
+    transition: transform 0.1s ease;
+}
+
+.cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+}
+
+/* Glitch Animation Layers */
+.glitch-layer-1 {
+    animation: glitch-1 0.3s infinite;
+    opacity: 0.7;
+}
+
+.glitch-layer-2 {
+    animation: glitch-2 0.4s infinite;
+    opacity: 0.7;
+}
+
+.glitch-layer-main {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes glitch-1 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    25% {
+        transform: translate(-2px, 1px);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(2px, -1px);
+        opacity: 0.8;
+    }
+    75% {
+        transform: translate(-1px, 2px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes glitch-2 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    33% {
+        transform: translate(2px, -1px);
+        opacity: 0.6;
+    }
+    66% {
+        transform: translate(-2px, 2px);
+        opacity: 0.8;
+    }
+}
+
+/* Hide default cursor in admin panel */
+.admin-cursor-area,
+.admin-cursor-area * {
+    cursor: none !important;
+}
+
+/* Pulse effect on hover */
+.custom-cursor:hover .cursor-trail {
+    width: 40px;
+    height: 40px;
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* ===== USER PANEL CURSOR (Yellow Theme) ===== */
+.user-custom-cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-2px, -2px);
+    transition: transform 0.1s ease;
+}
+
+.user-cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+}
+
+/* Glitch Animation Layers - Yellow */
+.user-glitch-layer-1 {
+    animation: user-glitch-1 0.3s infinite;
+    opacity: 0.7;
+}
+
+.user-glitch-layer-2 {
+    animation: user-glitch-2 0.4s infinite;
+    opacity: 0.7;
+}
+
+.user-glitch-layer-main {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes user-glitch-1 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    25% {
+        transform: translate(-2px, 1px);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(2px, -1px);
+        opacity: 0.8;
+    }
+    75% {
+        transform: translate(-1px, 2px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes user-glitch-2 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    33% {
+        transform: translate(2px, -1px);
+        opacity: 0.6;
+    }
+    66% {
+        transform: translate(-2px, 2px);
+        opacity: 0.8;
+    }
+}
+
+/* Hide default cursor in user panel */
+.user-cursor-area,
+.user-cursor-area * {
+    cursor: none !important;
+}
+
+/* Pulse effect on hover - Yellow */
+.user-custom-cursor:hover .user-cursor-trail {
+    width: 40px;
+    height: 40px;
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
+/* ===== USER PANEL CURSOR (Yellow Theme) ===== */
+.user-custom-cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-2px, -2px);
+    transition: transform 0.1s ease;
+}
+
+.user-cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+}
+
+/* Glitch Animation Layers - Yellow */
+.user-glitch-layer-1 {
+    animation: user-glitch-1 0.3s infinite;
+    opacity: 0.7;
+}
+
+.user-glitch-layer-2 {
+    animation: user-glitch-2 0.4s infinite;
+    opacity: 0.7;
+}
+
+.user-glitch-layer-main {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes user-glitch-1 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    25% {
+        transform: translate(-2px, 1px);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(2px, -1px);
+        opacity: 0.8;
+    }
+    75% {
+        transform: translate(-1px, 2px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes user-glitch-2 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.7;
+    }
+    33% {
+        transform: translate(2px, -1px);
+        opacity: 0.6;
+    }
+    66% {
+        transform: translate(-2px, 2px);
+        opacity: 0.8;
+    }
+}
+
+/* Hide default cursor in user panel */
+.user-cursor-area,
+.user-cursor-area * {
+    cursor: none !important;
+}
+
+/* Pulse effect on hover - Yellow */
+.user-custom-cursor:hover .user-cursor-trail {
+    width: 40px;
+    height: 40px;
+    border-color: rgba(251, 191, 36, 0.5);
+}

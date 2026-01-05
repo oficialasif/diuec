@@ -24,7 +24,6 @@ const navItems = [
     { href: '/diuec/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/diuec/dashboard/users', label: 'User Management', icon: Users },
     { href: '/diuec/dashboard/tournaments', label: 'Tournaments', icon: Trophy },
-    { href: '/diuec/dashboard/matches', label: 'Match Verification', icon: Shield },
     { href: '/diuec/dashboard/teams', label: 'Teams', icon: Users },
     { href: '/diuec/dashboard/games', label: 'Games', icon: Gamepad2 },
     { href: '/diuec/dashboard/support', label: 'Support', icon: Headphones },

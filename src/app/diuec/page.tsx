@@ -21,21 +21,29 @@ export default function DiuecAdminPortal() {
       const userDoc = await getDoc(doc(db, 'users', userId))
 
       if (!userDoc.exists()) {
-        console.log('User document does not exist for UID:', userId)
+        console.error('❌ User document does not exist for UID:', userId)
+        toast.error('User profile not found. Please contact support.')
         return false
       }
 
       const userData = userDoc.data()
-      console.log('User data for UID', userId, ':', userData)
+      console.log('📋 Full user data:', JSON.stringify(userData, null, 2))
+      console.log('🔑 Role field value:', userData?.role)
+      console.log('🔍 Role type:', typeof userData?.role)
 
-      if (userData?.role !== 'admin') {
-        console.log('User role is not admin:', userData?.role)
+      // Check role (case-insensitive)
+      const userRole = userData?.role?.toString().toLowerCase()
+
+      if (userRole !== 'admin') {
+        console.error('❌ Access denied - User role:', userData?.role, '(expected: admin)')
         return false
       }
 
+      console.log('✅ Admin role verified for:', userId)
       return true
     } catch (error) {
-      console.error('Error checking admin role:', error)
+      console.error('❌ Error checking admin role:', error)
+      toast.error('Error verifying admin privileges. Please try again.')
       return false
     }
   }

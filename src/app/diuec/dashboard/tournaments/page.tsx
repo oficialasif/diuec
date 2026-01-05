@@ -140,40 +140,60 @@ export default function TournamentsPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}`} className="flex-1">
+
+                        {/* Action Buttons */}
+                        <div className="space-y-2">
+                            {/* Primary Action */}
+                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}/registrations`} className="block">
                                 <Button variant="outline" size="sm" className="w-full">
-                                    <Edit className="w-4 h-4 mr-1" />
-                                    Edit
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    View Registrations
                                 </Button>
                             </Link>
-                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}/brackets`}>
-                                <Button variant="ghost" size="sm" title="Manage Brackets">
-                                    <Swords className="w-4 h-4" />
+
+                            {/* Tournament Management Actions */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <Link href={`/diuec/dashboard/tournaments/${tournament.id}/groups`}>
+                                    <Button variant="outline" size="sm" className="w-full">
+                                        <Users className="w-4 h-4 mr-1" />
+                                        Manage Groups
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/10"
+                                    onClick={() => handleGenerateBracket(tournament.id)}
+                                >
+                                    <Gamepad2 className="w-4 h-4 mr-1" />
+                                    Generate Bracket
                                 </Button>
-                            </Link>
-                            <Link href={`/diuec/dashboard/tournaments/${tournament.id}/groups`}>
-                                <Button variant="ghost" size="sm" title="Manage Groups">
-                                    <Users className="w-4 h-4" />
+                            </div>
+
+                            {/* Secondary Actions */}
+                            <div className="grid grid-cols-3 gap-2">
+                                <Link href={`/diuec/dashboard/tournaments/${tournament.id}/brackets`}>
+                                    <Button variant="ghost" size="sm" className="w-full h-auto py-2 flex flex-col items-center gap-1">
+                                        <Swords className="w-4 h-4" />
+                                        <span className="text-xs">Brackets</span>
+                                    </Button>
+                                </Link>
+                                <Link href={`/diuec/dashboard/tournaments/${tournament.id}`}>
+                                    <Button variant="ghost" size="sm" className="w-full h-auto py-2 flex flex-col items-center gap-1">
+                                        <Edit className="w-4 h-4" />
+                                        <span className="text-xs">Edit</span>
+                                    </Button>
+                                </Link>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDelete(tournament.id)}
+                                    className="w-full h-auto py-2 flex flex-col items-center gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span className="text-xs">Delete</span>
                                 </Button>
-                            </Link>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-yellow-400 hover:text-yellow-500 hover:bg-yellow-500/10"
-                                title="Generate Bracket"
-                                onClick={() => handleGenerateBracket(tournament.id)}
-                            >
-                                <Gamepad2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDelete(tournament.id)}
-                                className="text-red-400 hover:text-red-300"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
+                            </div>
                         </div>
                     </div>
                 ))}

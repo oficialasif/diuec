@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/auth-context";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Toaster as SonnerToaster } from 'sonner';
+import UserCustomCursor from "@/components/shared/UserCustomCursor";
+import "@/styles/custom-cursor.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -121,13 +123,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${inter.className} min-h-screen bg-black text-white`}>
+      <body suppressHydrationWarning className={`${inter.className} min-h-screen bg-black text-white user-cursor-area`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
           <AuthProvider>
+            <UserCustomCursor />
             <Navbar />
             <main className="flex-grow">
               {children}

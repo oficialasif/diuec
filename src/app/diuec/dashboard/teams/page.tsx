@@ -14,6 +14,7 @@ export default function TeamsPage() {
     const [joinRequests, setJoinRequests] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState<'teams' | 'requests'>('teams')
+    const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
 
     useEffect(() => {
         fetchData()
@@ -61,6 +62,16 @@ export default function TeamsPage() {
         }
     }
 
+    const toggleTeamMembers = (teamId: string) => {
+        const newExpanded = new Set(expandedTeams)
+        if (newExpanded.has(teamId)) {
+            newExpanded.delete(teamId)
+        } else {
+            newExpanded.add(teamId)
+        }
+        setExpandedTeams(newExpanded)
+    }
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -101,56 +112,97 @@ export default function TeamsPage() {
             {/* Teams Tab */}
             {activeTab === 'teams' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {teams.map((team) => (
-                        <div key={team.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800">
-                                        <Image
-                                            src={getValidImageUrl(team.logo, 'avatar')}
-                                            alt={team.name}
-                                            fill
-                                            className="object-cover"
-                                        />
+                    {teams.map((team) => {
+                        const isExpanded = expandedTeams.has(team.id)
+                        return (
+                            <div key={team.id} className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+                                <div className="p-6">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-zinc-800">
+                                            <Image
+                                                src={getValidImageUrl(team.logo, 'avatar')}
+                                                alt={team.name}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-white">{team.name}</h3>
+                                            <p className="text-sm text-gray-400">[{team.tag}]</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-white">{team.name}</h3>
-                                        <p className="text-sm text-gray-400">[{team.tag}]</p>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400">Game:</span>
+                                            <span className="text-white">{team.game}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400">Members:</span>
+                                            <span className="text-white">{team.members?.length || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-400">W/L:</span>
+                                            <span className="text-white">{team.stats?.wins || 0}/{team.stats?.losses || 0}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-400">Game:</span>
-                                        <span className="text-white">{team.game}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-400">Members:</span>
-                                        <span className="text-white">{team.members?.length || 0}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-400">W/L:</span>
-                                        <span className="text-white">{team.stats?.wins || 0}/{team.stats?.losses || 0}</span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-end">
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => {
-                                        if (confirm(`Are you sure you want to delete ${team.name}? This cannot be undone.`)) {
-                                            handleDeleteTeam(team.id)
-                                        }
-                                    }}
-                                    className="bg-red-900/20 text-red-500 hover:bg-red-900/40 hover:text-red-400 border border-red-900/50"
-                                >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Team
-                                </Button>
+                                {/* Expandable Members Section */}
+                                {isExpanded && team.members && team.members.length > 0 && (
+                                    <div className="border-t border-zinc-800 bg-black/20 p-4">
+                                        <h4 className="text-sm font-semibold text-gray-400 mb-3">Team Members</h4>
+                                        <div className="space-y-2">
+                                            {team.members.map((member: any, idx: number) => (
+                                                <div key={idx} className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 rounded-lg p-2">
+                                                    <div className="relative w-8 h-8 rounded-full overflow-hidden bg-zinc-800">
+                                                        <Image
+                                                            src={getValidImageUrl(member.photoURL, 'avatar')}
+                                                            alt={member.displayName}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-white">{member.displayName}</p>
+                                                        <p className="text-xs text-gray-400 capitalize">{member.role}</p>
+                                                    </div>
+                                                    {member.role === 'captain' && (
+                                                        <span className="px-2 py-0.5 bg-violet-600/20 text-violet-300 text-xs rounded-full">
+                                                            Captain
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="p-4 border-t border-zinc-800 flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => toggleTeamMembers(team.id)}
+                                        className="flex-1"
+                                    >
+                                        <Users className="w-4 h-4 mr-2" />
+                                        {isExpanded ? 'Hide Members' : 'View Members'}
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (confirm(`Are you sure you want to delete ${team.name}? This cannot be undone.`)) {
+                                                handleDeleteTeam(team.id)
+                                            }
+                                        }}
+                                        className="bg-red-900/20 text-red-500 hover:bg-red-900/40 hover:text-red-400 border border-red-900/50"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             )}
 
