@@ -653,7 +653,7 @@ export async function registerForTournament(tournamentId: string, teamId: string
     // @ts-ignore
     teamId: teamId || null,
     userId,
-    ingameName: ingameName || undefined,
+    ...(ingameName && { ingameName }),
     status: 'approved',
     createdAt: new Date()
   }

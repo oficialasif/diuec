@@ -221,11 +221,13 @@ export function GroupsDisplay({ tournamentId, refreshTrigger }: GroupsDisplayPro
 
                 return (
                     <div key={groupName} className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-violet-900/50 to-transparent p-3 rounded-lg border-l-4 border-violet-500">
-                            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-bold text-white shadow-lg shadow-violet-600/20">
-                                {groupName}
+                        <div className={`flex items-center gap-3 bg-gradient-to-r ${groupName === 'Unassigned' ? 'from-zinc-800' : 'from-violet-900/50'} to-transparent p-3 rounded-lg border-l-4 ${groupName === 'Unassigned' ? 'border-zinc-500' : 'border-violet-500'}`}>
+                            <div className={`w-8 h-8 rounded-full ${groupName === 'Unassigned' ? 'bg-zinc-700' : 'bg-violet-600'} flex items-center justify-center font-bold text-white shadow-lg`}>
+                                {groupName === 'Unassigned' ? '?' : groupName}
                             </div>
-                            <h3 className="text-lg font-bold text-white uppercase tracking-wider">Group {groupName}</h3>
+                            <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                                {groupName === 'Unassigned' ? 'Unassigned Participants' : `Group ${groupName}`}
+                            </h3>
                         </div>
 
                         <div className="bg-black/40 border border-white/10 rounded-xl overflow-hidden shadow-xl backdrop-blur-sm">
