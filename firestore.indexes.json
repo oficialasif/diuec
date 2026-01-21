@@ -93,6 +93,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "teams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "stats.wins",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

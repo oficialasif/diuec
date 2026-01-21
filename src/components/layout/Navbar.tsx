@@ -134,7 +134,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent cursor-default">DIU ESPORTS</h1>
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-violet-500 to-violet-200 bg-clip-text text-transparent cursor-default">DIU Esports Community</h1>
         </div>
 
         {/* Desktop Navigation */}

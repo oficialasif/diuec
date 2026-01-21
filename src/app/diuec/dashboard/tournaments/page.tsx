@@ -38,32 +38,7 @@ export default function TournamentsPage() {
         }
     }
 
-    const handleSeedData = async () => {
-        if (!user) return
-        if (!confirm('Create test data (1 Tournament, 8 Teams)?')) return
-        try {
-            const { seedTestData } = await import('@/lib/services/seed-service')
-            await seedTestData(user.uid, userProfile?.displayName || 'Admin')
-            toast.success('Test data seeded successfully')
-            fetchTournaments()
-        } catch (error) {
-            console.error(error)
-            toast.error('Failed to seed data')
-        }
-    }
 
-    const handleCleanup = async () => {
-        if (!confirm('WARNING: Delete all test data (Tournament, Teams, Matches)?')) return
-        try {
-            const { cleanupTestData } = await import('@/lib/services/seed-service')
-            await cleanupTestData()
-            toast.success('Test data cleaned up')
-            fetchTournaments()
-        } catch (error) {
-            console.error(error)
-            toast.error('Failed to cleanup data')
-        }
-    }
 
     const handleDelete = async (tournamentId: string) => {
         if (!confirm('Are you sure you want to delete this tournament?')) return
@@ -93,12 +68,6 @@ export default function TournamentsPage() {
                     <p className="text-gray-400">Create and manage tournaments</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button onClick={handleCleanup} variant="outline" className="border-red-500/20 text-red-400 hover:bg-red-500/10">
-                        Cleanup Test Data
-                    </Button>
-                    <Button onClick={handleSeedData} variant="outline" className="border-violet-500/20 text-violet-300">
-                        Seed Test Data
-                    </Button>
                     <Link href="/diuec/dashboard/tournaments/create">
                         <Button className="bg-violet-600 hover:bg-violet-700">
                             <Plus className="w-4 h-4 mr-2" />

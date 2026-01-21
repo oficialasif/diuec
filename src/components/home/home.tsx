@@ -3,20 +3,10 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { motion } from "framer-motion"
-// import { Button } from "@/components/ui/button"
-// import { MessageSquare, Heart, Share2, Send } from "lucide-react"
-import {
-  getCommitteeMembers,
-  getGalleryImages,
-  getSponsors
-} from '@/lib/services'
 import { CommitteeMember, GalleryImage, Sponsor } from '@/lib/models'
 import { AuthModal } from "@/components/auth/auth"
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
-// <PhotoGallery /> // Removed static import usage
-// {/* Latest Updates Removed */ }
-// {/* <LatestUpdates /> */ }
 
 // Typewriter Effect Component
 const TypewriterEffect = () => {
@@ -71,7 +61,16 @@ const TypewriterEffect = () => {
   )
 }
 
-export default function Home() {
+// Helper type to handle serialized data from Server Components
+type Serialized<T> = Omit<T, 'createdAt'> & { createdAt: string | number | Date }
+
+interface HomeProps {
+  committee: Serialized<CommitteeMember>[]
+  gallery: Serialized<GalleryImage>[]
+  sponsors: Serialized<Sponsor>[]
+}
+
+export default function Home({ committee, gallery, sponsors }: HomeProps) {
   const { user, signOut } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [counts, setCounts] = useState({
@@ -81,33 +80,8 @@ export default function Home() {
     games: 0,
   })
 
-  // Dynamic Content State
-  const [committee, setCommittee] = useState<CommitteeMember[]>([])
-  const [gallery, setGallery] = useState<GalleryImage[]>([])
-  const [sponsors, setSponsors] = useState<Sponsor[]>([])
-  const [loading, setLoading] = useState(true)
   const [committeeHovered, setCommitteeHovered] = useState(false)
   const [sponsorsHovered, setSponsorsHovered] = useState(false)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [cData, gData, sData] = await Promise.all([
-          getCommitteeMembers(),
-          getGalleryImages(),
-          getSponsors()
-        ])
-        setCommittee(cData)
-        setGallery(gData)
-        setSponsors(sData)
-      } catch (error) {
-        console.error("Failed to load home content", error)
-      } finally { // Stop loading anyway
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -273,21 +247,12 @@ export default function Home() {
                   className="relative rounded-xl overflow-hidden group bg-zinc-900 break-inside-avoid mb-4"
                 >
                   <div className="relative w-full">
-                    {/* Use responsive sizing logic or fixed aspect ratio if preferred, but for Pinterest style, intrinsic height is best. 
-                                    Since Next/Image needs dimensions or fill, 'fill' with parent aspect ratio is tricky for mixed sizes without data.
-                                    For true masonry with unknown sizes, we often use width:100% and height:auto. 
-                                    Using 'response' intrinsic size requires keeping width/height in DB. 
-                                    Fallback: Use 'fill' but give container a random-ish aspect ratio or use specific class if data lacks it.
-                                    For now, we will use a simple aspect ratio trick or assume images are uploaded with standard sizes. 
-                                    Actually, best for NextJS generic masonry is 'width: auto', 'height: auto' <img> tag or carefully sized wrapper.
-                                    Let's use a standard <img> for masonry flexibility if we don't have dimensions, OR assume fill with a set height class.
-                                    User asked for "Pinterest layout style".
-                                */}
-                    <img
+                    <Image
                       src={img.imageUrl}
                       alt={img.title || 'Gallery Image'}
+                      width={img.width || 600}
+                      height={img.height || 400}
                       className="w-full h-auto object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                       <p className="text-white font-medium">{img.title}</p>

@@ -24,9 +24,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://diuec.com'), // Replace with actual domain when live
-  title: {
-    default: "DIU Esports Community - Official Platform",
-    template: "%s | DIU Esports Community"
+  title: "DIU Esports Community",
+  icons: {
+    icon: '/game-console.png',
+    shortcut: '/game-console.png',
+    apple: '/game-console.png',
   },
   description: "The official Esports Community platform for Daffodil International University. Join tournaments, creating teams, and compete with the best.",
   keywords: [
