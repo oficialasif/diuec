@@ -183,7 +183,7 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
             </div>
 
             <form onSubmit={handleSubmit} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 space-y-6">
-                {/* Same form structure as create, but with edit functionality */}
+
                 {/* Basic Info */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold text-white">Basic Information</h2>
@@ -220,14 +220,37 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
                                                 {game.displayName}
                                             </option>
                                         ))}
-                                        <option value="">Select a game</option>
-                                        {games.map(game => (
-                                            <option key={game.id} value={game.name}>
-                                                {game.displayName}
-                                            </option>
-                                        ))}
                                     </>
                                 )}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Format *</label>
+                            <select
+                                required
+                                value={formData.format}
+                                onChange={(e) => setFormData({ ...formData, format: e.target.value as any })}
+                                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:border-violet-500"
+                            >
+                                <option value="SOLO">SOLO</option>
+                                <option value="DUO">DUO</option>
+                                <option value="TRIO">TRIO</option>
+                                <option value="SQUAD">SQUAD</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">Type *</label>
+                            <select
+                                required
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:border-violet-500"
+                            >
+                                <option value="ELIMINATION">Elimination</option>
+                                <option value="BATTLE_ROYALE">Battle Royale</option>
+                                <option value="GROUP_KNOCKOUT">Group + Knockout</option>
                             </select>
                         </div>
 
@@ -259,7 +282,7 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
                     </div>
                 </div>
 
-                {/* Banner Upload - same as create */}
+                {/* Banner Upload */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold text-white">Tournament Banner</h2>
 
@@ -289,7 +312,7 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
                     )}
                 </div>
 
-                {/* Prize, Schedule, Details - same fields as create */}
+                {/* Prize, Schedule, Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                         placeholder="Prize Pool"

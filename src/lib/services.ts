@@ -460,8 +460,10 @@ export async function requestToJoinTeam(
   teamId: string,
   userId: string,
   requestData: {
-    diuId: string
-    deviceType: string
+    name: string
+    gmail: string
+    gameUsername: string
+    deviceName: string
     playingLevel: 'beginner' | 'intermediate' | 'advanced' | 'pro'
     experience: string
     gameName: string
@@ -492,8 +494,10 @@ export async function requestToJoinTeam(
     userId,
     userDisplayName: userProfile.displayName,
     userPhotoURL: userProfile.photoURL,
-    diuId: requestData.diuId,
-    deviceType: requestData.deviceType,
+    name: requestData.name,
+    gmail: requestData.gmail,
+    gameUsername: requestData.gameUsername,
+    deviceName: requestData.deviceName,
     playingLevel: requestData.playingLevel,
     experience: requestData.experience,
     gameName: requestData.gameName,

@@ -384,8 +384,8 @@ export default function LeaderboardPage() {
                                             key={item.id}
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            onClick={() => item.isTeam && toggleRow(item.id)}
-                                            className={`transition-colors group ${item.isTeam ? 'cursor-pointer hover:bg-zinc-800/50' : 'hover:bg-zinc-800/20'
+                                            onClick={() => item.isTeam && item.rank > 3 && toggleRow(item.id)}
+                                            className={`transition-colors group ${item.isTeam && item.rank > 3 ? 'cursor-pointer hover:bg-zinc-800/50' : 'hover:bg-zinc-800/20'
                                                 } ${expandedRows.includes(item.id) ? 'bg-zinc-800/40' : ''}`}
                                         >
                                             <td className="py-4 px-6">
@@ -408,7 +408,7 @@ export default function LeaderboardPage() {
                                             ))}
 
                                             <td className="py-4 px-6 text-center text-gray-500">
-                                                {item.isTeam && (
+                                                {item.isTeam && item.rank > 3 && (
                                                     expandedRows.includes(item.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />
                                                 )}
                                             </td>
@@ -432,7 +432,7 @@ export default function LeaderboardPage() {
                                                                             <User size={18} className="text-gray-400" />
                                                                         </div>
                                                                         <div className="flex-1">
-                                                                            <p className="font-semibold text-sm text-white mb-1">{member.name}</p>
+                                                                            <p className="font-semibold text-sm text-white mb-1">{member.displayName || member.name}</p>
                                                                             <div className="flex flex-wrap gap-2">
                                                                                 <span className="text-xs bg-zinc-800 px-2 py-0.5 rounded text-gray-300 border border-zinc-700">{member.role}</span>
                                                                                 {currentConfig.memberColumns.map(col => (

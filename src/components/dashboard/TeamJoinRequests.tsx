@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, CheckCircle, XCircle, Clock, Mail, Smartphone, TrendingUp, Award } from 'lucide-react'
+import { Users, UserPlus, CheckCircle, XCircle, Clock, Mail, Smartphone, TrendingUp, Award, Gamepad2, User } from 'lucide-react'
 import { Button } from '@/components/shared/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -127,13 +127,21 @@ export default function TeamJoinRequests({ teamId, isCaptain }: JoinRequestsProp
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-                                        <div className="flex items-center gap-1 text-gray-400">
+                                        <div className="flex items-center gap-1 text-gray-400 col-span-2">
                                             <Mail className="w-3 h-3" />
-                                            <span className="truncate">{request.diuId}</span>
+                                            <span className="truncate">{request.gmail}</span>
                                         </div>
                                         <div className="flex items-center gap-1 text-gray-400">
+                                            <User className="w-3 h-3" />
+                                            <span>{request.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-gray-400">
+                                            <Gamepad2 className="w-3 h-3" />
+                                            <span>{request.gameUsername}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-gray-400 col-span-2">
                                             <Smartphone className="w-3 h-3" />
-                                            <span>{request.deviceType}</span>
+                                            <span>{request.deviceName}</span>
                                         </div>
                                     </div>
 

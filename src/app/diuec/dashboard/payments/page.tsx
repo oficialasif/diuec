@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { collection, query, where, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Button } from '@/components/shared/ui/button'
-import { Check, X, Search, DollarSign, Calendar, Mail } from 'lucide-react'
+import { Check, X, Search, DollarSign, Calendar, Mail, Clock } from 'lucide-react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { TournamentRegistration, Team, Tournament } from '@/lib/models'
@@ -200,6 +200,9 @@ export default function PaymentClearancePage() {
 
                             {/* Actions */}
                             <div className="flex gap-2">
+                                <Button size="sm" variant="outline" className="border-gray-500/50 text-gray-400 hover:bg-gray-500/10 hover:text-gray-300" onClick={() => toast('History feature coming soon')}>
+                                    <Clock className="w-4 h-4 mr-1" /> History
+                                </Button>
                                 <Button size="sm" variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300" onClick={() => handleAction(req.id, 'reject')}>
                                     <X className="w-4 h-4 mr-1" /> Reject
                                 </Button>

@@ -189,10 +189,14 @@ export function TournamentDetailsModal({
                                 ) : (
                                     <Button
                                         onClick={onRegister}
-                                        disabled={tournament.status !== 'upcoming'}
-                                        className="w-full bg-white text-black hover:bg-gray-200 py-6 text-lg font-bold"
+                                        disabled={tournament.status !== 'upcoming' || (tournament.registeredTeams >= tournament.maxTeams)}
+                                        className="w-full bg-white text-black hover:bg-gray-200 py-6 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {tournament.status === 'upcoming' ? 'Register Now' : 'Registration Closed'}
+                                        {tournament.status !== 'upcoming'
+                                            ? 'Registration Closed'
+                                            : (tournament.registeredTeams >= tournament.maxTeams)
+                                                ? 'Team is Full'
+                                                : 'Register Now'}
                                     </Button>
                                 )}
                             </div>

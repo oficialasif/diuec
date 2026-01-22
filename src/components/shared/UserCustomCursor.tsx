@@ -14,6 +14,7 @@ export default function UserCustomCursor() {
 
         const updateCursor = (e: MouseEvent) => {
             setPosition({ x: e.clientX, y: e.clientY })
+            setIsVisible(true) // Ensure visible on move
 
             // Check if hovering over clickable element
             const target = e.target as HTMLElement

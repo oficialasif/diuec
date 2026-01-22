@@ -209,8 +209,10 @@ export interface JoinRequest {
   userPhotoURL: string
 
   // Additional player information
-  diuId: string // DIU student ID
-  deviceType: string // Mobile, PC, Console
+  name: string
+  gmail: string
+  gameUsername: string
+  deviceName: string // Mobile, PC, Console details
   playingLevel: 'beginner' | 'intermediate' | 'advanced' | 'pro'
   experience: string // Years of experience or description
   gameName: string // Specific game for the team

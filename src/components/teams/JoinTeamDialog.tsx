@@ -31,8 +31,10 @@ export default function JoinTeamDialog({
     onSuccess
 }: JoinTeamDialogProps) {
     const [formData, setFormData] = useState({
-        diuId: '',
-        deviceType: '',
+        name: '',
+        gmail: '',
+        gameUsername: '',
+        deviceName: '',
         playingLevel: '' as 'beginner' | 'intermediate' | 'advanced' | 'pro' | '',
         experience: '',
         gameName: gameName
@@ -43,12 +45,20 @@ export default function JoinTeamDialog({
         e.preventDefault()
 
         // Validation
-        if (!formData.diuId.trim()) {
-            toast.error('Please enter your DIU ID')
+        if (!formData.name.trim()) {
+            toast.error('Please enter your Name')
             return
         }
-        if (!formData.deviceType) {
-            toast.error('Please select your device')
+        if (!formData.gmail.trim()) {
+            toast.error('Please enter your Gmail')
+            return
+        }
+        if (!formData.gameUsername.trim()) {
+            toast.error('Please enter your Game Username')
+            return
+        }
+        if (!formData.deviceName.trim()) {
+            toast.error('Please enter your Device Name')
             return
         }
         if (!formData.playingLevel) {
@@ -64,8 +74,10 @@ export default function JoinTeamDialog({
 
         try {
             await requestToJoinTeam(teamId, userId, {
-                diuId: formData.diuId,
-                deviceType: formData.deviceType,
+                name: formData.name,
+                gmail: formData.gmail,
+                gameUsername: formData.gameUsername,
+                deviceName: formData.deviceName,
                 playingLevel: formData.playingLevel as 'beginner' | 'intermediate' | 'advanced' | 'pro',
                 experience: formData.experience,
                 gameName: formData.gameName
@@ -75,8 +87,10 @@ export default function JoinTeamDialog({
 
             // Reset form
             setFormData({
-                diuId: '',
-                deviceType: '',
+                name: '',
+                gmail: '',
+                gameUsername: '',
+                deviceName: '',
                 playingLevel: '',
                 experience: '',
                 gameName: gameName
@@ -106,42 +120,68 @@ export default function JoinTeamDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-                    {/* DIU ID */}
+                    {/* Name */}
                     <div className="space-y-2">
                         <Label className="flex items-center gap-2 text-sm font-medium">
                             <User className="w-4 h-4 text-violet-400" />
-                            DIU ID <span className="text-red-500">*</span>
+                            Full Name <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             type="text"
-                            placeholder="e.g., 221-15-0001"
-                            value={formData.diuId}
-                            onChange={(e) => setFormData({ ...formData, diuId: e.target.value })}
+                            placeholder="Enter your full name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             className="bg-black border-violet-500/20 focus:border-violet-500"
                             required
                         />
                     </div>
 
-                    {/* Device Type */}
+                    {/* Gmail */}
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm font-medium">
+                            <User className="w-4 h-4 text-violet-400" />
+                            Gmail <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            type="email"
+                            placeholder="your.email@gmail.com"
+                            value={formData.gmail}
+                            onChange={(e) => setFormData({ ...formData, gmail: e.target.value })}
+                            className="bg-black border-violet-500/20 focus:border-violet-500"
+                            required
+                        />
+                    </div>
+
+                    {/* Game Username */}
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-sm font-medium">
+                            <Gamepad2 className="w-4 h-4 text-violet-400" />
+                            Game Username <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            type="text"
+                            placeholder="Your In-Game Name"
+                            value={formData.gameUsername}
+                            onChange={(e) => setFormData({ ...formData, gameUsername: e.target.value })}
+                            className="bg-black border-violet-500/20 focus:border-violet-500"
+                            required
+                        />
+                    </div>
+
+                    {/* Device Name */}
                     <div className="space-y-2">
                         <Label className="flex items-center gap-2 text-sm font-medium">
                             <Smartphone className="w-4 h-4 text-violet-400" />
-                            Device Type <span className="text-red-500">*</span>
+                            Device Name <span className="text-red-500">*</span>
                         </Label>
-                        <Select
-                            value={formData.deviceType}
-                            onValueChange={(value) => setFormData({ ...formData, deviceType: value })}
-                        >
-                            <SelectTrigger className="bg-black border-violet-500/20">
-                                <SelectValue placeholder="Select your device" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Mobile">Mobile</SelectItem>
-                                <SelectItem value="PC">PC</SelectItem>
-                                <SelectItem value="Console">Console (PS/Xbox)</SelectItem>
-                                <SelectItem value="Tablet">Tablet</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            type="text"
+                            placeholder="e.g. iPhone 13, PC Specs, etc."
+                            value={formData.deviceName}
+                            onChange={(e) => setFormData({ ...formData, deviceName: e.target.value })}
+                            className="bg-black border-violet-500/20 focus:border-violet-500"
+                            required
+                        />
                     </div>
 
                     {/* Playing Level */}
