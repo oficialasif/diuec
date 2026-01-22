@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { AuthModal } from '@/components/auth/auth'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar'
 import { Button } from '@/components/shared/ui/button'
-import { User, LogOut, Settings, Trophy, Menu, X, ChevronRight, ChevronDown } from 'lucide-react'
+import { User, LogOut, Settings, Trophy, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { ProfileEditModal } from '@/components/profile/ProfileEditModal'
@@ -26,13 +26,12 @@ export default function Navbar() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showTournamentsModal, setShowTournamentsModal] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null)
+
   const [isScrolled, setIsScrolled] = useState(false)
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
-    setActiveMobileDropdown(null)
   }, [pathname])
 
   // Prevent scrolling when mobile menu is open
@@ -50,9 +49,7 @@ export default function Navbar() {
     }
   }, [isMobileMenuOpen])
 
-  const handleMobileDropdownToggle = (href: string) => {
-    setActiveMobileDropdown(activeMobileDropdown === href ? null : href)
-  }
+
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -63,37 +60,10 @@ export default function Navbar() {
     return pathname?.startsWith(href)
   }
 
-  // State for dynamic navigation
-  const [games, setGames] = useState<{ name: string; displayName: string }[]>([])
-
-  useEffect(() => {
-    // Fetch active games for the dropdown
-    const fetchGames = async () => {
-      try {
-        const { getActiveGames } = await import('@/lib/game-services')
-        const activeGames = await getActiveGames()
-        setGames(activeGames)
-      } catch (error) {
-        console.error('Failed to fetch games for navbar', error)
-      }
-    }
-    fetchGames()
-  }, [])
-
   const navItems = [
     { href: '/', label: 'HOME' },
     // { href: '/community', label: 'COMMUNITY' }, // Temporarily disabled
-    {
-      href: '/tournaments',
-      label: 'TOURNAMENTS',
-      dropdownItems: games.length > 0 ? games.map(game => ({
-        href: `/games/${game.name.toLowerCase()}`,
-        label: game.displayName.toUpperCase()
-      })) : [
-        { href: '/games/pubg', label: 'PUBG' }, // Failsafe defaults
-        { href: '/games/free-fire', label: 'FREE FIRE' }
-      ]
-    },
+    { href: '/tournaments', label: 'TOURNAMENTS' },
     { href: '/teams', label: 'TEAMS' },
     { href: '/leaderboard', label: 'LEADERBOARD' },
   ]
@@ -154,24 +124,7 @@ export default function Navbar() {
                 {item.label}
               </Link>
 
-              {item.dropdownItems && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-black/95 rounded-md shadow-lg overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-violet-500/20">
-                  <div className="py-2">
-                    {item.dropdownItems.map((dropdownItem) => (
-                      <Link
-                        key={dropdownItem.href}
-                        href={dropdownItem.href}
-                        className={cn(
-                          "block px-4 py-2 text-sm transition-colors",
-                          isActive(dropdownItem.href) ? "bg-violet-900/50 text-white" : "text-gray-300 hover:bg-violet-900 hover:text-white"
-                        )}
-                      >
-                        {dropdownItem.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+
             </div>
           ))}
 
@@ -293,64 +246,16 @@ export default function Navbar() {
             <div className="space-y-1">
               {navItems.map((item) => (
                 <div key={item.href} className="border-b border-violet-500/10 last:border-0">
-                  {item.dropdownItems ? (
-                    // If the item has dropdown items, make it a button
-                    <div>
-                      <button
-                        onClick={() => handleMobileDropdownToggle(item.href)}
-                        className="flex items-center justify-between w-full py-3 text-base font-medium text-gray-300 hover:text-white transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={cn(isActive(item.href) && "text-violet-400")}>{item.label}</span>
-                        </div>
-                        <ChevronDown
-                          className={cn(
-                            "h-5 w-5 transition-transform duration-200",
-                            activeMobileDropdown === item.href ? "rotate-180" : ""
-                          )}
-                        />
-                      </button>
-
-                      <div
-                        className={cn(
-                          "overflow-hidden transition-all duration-200 ease-in-out",
-                          activeMobileDropdown === item.href ? "max-h-96" : "max-h-0"
-                        )}
-                      >
-                        <div className="pl-4 py-2 space-y-2 bg-violet-500/5">
-                          {item.dropdownItems.map((dropdownItem) => (
-                            <Link
-                              key={dropdownItem.href}
-                              href={dropdownItem.href}
-                              className={cn(
-                                "flex items-center gap-2 py-2 text-sm transition-colors",
-                                isActive(dropdownItem.href) ? "text-violet-400" : "text-gray-400 hover:text-white"
-                              )}
-                              onClick={() => {
-                                setIsMobileMenuOpen(false)
-                                setActiveMobileDropdown(null)
-                              }}
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                              <span>{dropdownItem.label}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    // Regular link without dropdown
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex items-center justify-between py-3 text-base font-medium transition-colors",
-                        isActive(item.href) ? "text-violet-400" : "text-gray-300 hover:text-white"
-                      )}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <span>{item.label}</span>
-                    </Link>
-                  )}
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center justify-between py-3 text-base font-medium transition-colors",
+                      isActive(item.href) ? "text-violet-400" : "text-gray-300 hover:text-white"
+                    )}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <span>{item.label}</span>
+                  </Link>
                 </div>
               ))}
             </div>

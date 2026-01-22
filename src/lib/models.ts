@@ -179,6 +179,12 @@ export interface TournamentRegistration {
   ingameName?: string // Custom name for Solo tournaments
   status: 'pending' | 'approved' | 'rejected'
   group?: string
+  paymentDetails?: {
+    transactionId: string
+    paymentNumber: string
+    captainEmail?: string
+    submissionDate: Date // Changed from string to Date for better querying
+  }
   createdAt: Date
 }
 

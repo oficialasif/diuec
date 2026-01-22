@@ -569,7 +569,13 @@ export async function getTournament(id: string) {
   return docSnap.exists() ? docSnap.data() as Tournament : null
 }
 
-export async function registerForTournament(tournamentId: string, teamId: string | null, userId: string, ingameName?: string) {
+export async function registerForTournament(
+  tournamentId: string,
+  teamId: string | null,
+  userId: string,
+  ingameName?: string,
+  paymentDetails?: { transactionId: string; paymentNumber: string; captainEmail: string }
+) {
   const tournament = await getTournament(tournamentId)
   if (!tournament) throw new Error('Tournament not found')
 
@@ -627,9 +633,11 @@ export async function registerForTournament(tournamentId: string, teamId: string
       // Note: Some squads are 5. Safest to enforce tournament.teamSize which Admin sets.
     }
 
-    // Enforce strict size if we have a requirement
-    if (requiredSize && currentMemberCount !== requiredSize) {
-      throw new Error(`Invalid team size. ${tournament.format} tournament requires exactly ${requiredSize} players. Your team has ${currentMemberCount}.`);
+    // Enforce size with optional substitute (Required OR Required + 1)
+    if (requiredSize) {
+      if (currentMemberCount < requiredSize || currentMemberCount > requiredSize + 1) {
+        throw new Error(`Invalid team size. ${tournament.format} tournament requires ${requiredSize} to ${requiredSize + 1} players (including optional sub). Your team has ${currentMemberCount}.`);
+      }
     }
 
     // 3. Validate Format Compatibility (optional if handled by size, but good for sanity)
@@ -654,7 +662,10 @@ export async function registerForTournament(tournamentId: string, teamId: string
     teamId: teamId || null,
     userId,
     ...(ingameName && { ingameName }),
-    status: 'approved',
+    status: paymentDetails ? 'pending' : 'approved', // If payment involved, set to pending until admin review. Or maybe just approved if we trust them? User said "Payment clearance" section, suggesting verification needed.
+    // However, if we set to pending, they might not see themselves in groups immediately. 
+    // Let's set to 'pending' if payment details provided, so Admin can verify 'Payment Clearance'.
+    paymentDetails: paymentDetails ? { ...paymentDetails, submissionDate: new Date() } : undefined,
     createdAt: new Date()
   }
 

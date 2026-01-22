@@ -20,6 +20,7 @@ import { Card } from '@/components/ui/card'
 import Leaderboard from '@/components/tournaments/Leaderboard'
 import { TournamentDetailsModal } from '@/components/tournaments/TournamentDetailsModal'
 import { SymmetricBracket } from '@/components/tournaments/SymmetricBracket'
+import { PaymentSubmissionModal } from '@/components/tournaments/PaymentSubmissionModal'
 import { ResultSubmissionModal } from '@/components/tournaments/ResultSubmissionModal'
 
 export default function TournamentsPage() {
@@ -36,7 +37,11 @@ export default function TournamentsPage() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [teamSelectionOpen, setTeamSelectionOpen] = useState(false)
   const [soloRegistrationOpen, setSoloRegistrationOpen] = useState(false)
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null)
+
+  // Staging for payment flow
+  const [pendingRegistration, setPendingRegistration] = useState<{ team: Team | null, ingameName?: string } | null>(null)
 
   // For dashboard redirection
   const [viewMode, setViewMode] = useState<'details' | 'browse'>('browse') // Keeping for now if we want to redirect to a totally different page later, but for now we are fixing the POPUP requirement. Wait, user wants popup for DETAILS. 
@@ -177,9 +182,39 @@ export default function TournamentsPage() {
       return
     }
 
+    // CHECK FOR PAYMENT Requirement
+    const isPaid = tournament.entryFee && tournament.entryFee.toLowerCase() !== 'free' && tournament.entryFee !== '0'
+    if (isPaid) {
+      setPendingRegistration({ team, ingameName })
+      setTeamSelectionOpen(false)
+      setSoloRegistrationOpen(false)
+      setPaymentModalOpen(true)
+      return
+    }
+
+    // Free Registration Flow
+    await executeRegistration(tournament, team, ingameName)
+  }
+
+  const handlePaymentConfirm = async (transactionId: string, paymentNumber: string) => {
+    if (!selectedTournament || !pendingRegistration || !user) return
+
+    const paymentDetails = {
+      transactionId,
+      paymentNumber,
+      captainEmail: user.email || ''
+    }
+
+    await executeRegistration(selectedTournament, pendingRegistration.team, pendingRegistration.ingameName, paymentDetails)
+    setPaymentModalOpen(false)
+    setPendingRegistration(null)
+  }
+
+  const executeRegistration = async (tournament: Tournament, team: Team | null, ingameName?: string, paymentDetails?: any) => {
+    if (!user) return
     try {
-      await registerForTournament(tournament.id, team ? team.id : null, user.uid, ingameName)
-      toast.success('Successfully registered!')
+      await registerForTournament(tournament.id, team ? team.id : null, user.uid, ingameName, paymentDetails)
+      toast.success(paymentDetails ? 'Registration submitted! Pending payment verification.' : 'Successfully registered!')
       setRegisteredTournaments(prev => [...prev, tournament.id])
       setTournaments(prev => prev.map(t =>
         t.id === tournament.id ? { ...t, registeredTeams: t.registeredTeams + 1 } : t
@@ -187,9 +222,6 @@ export default function TournamentsPage() {
       setTeamSelectionOpen(false)
       setSoloRegistrationOpen(false)
 
-      // Open Dashboard or Details? 
-      // User likely wants to confirm. Let's show details again (now registered) or just go to Dashboard view.
-      // For now, let's keep the existing Dashboard Logic for "My Tournaments"
       setDetailsModalOpen(false)
       setSelectedTournament(tournament)
       setViewMode('details') // Switch to dashboard view
@@ -496,6 +528,14 @@ export default function TournamentsPage() {
         onClose={() => setSoloRegistrationOpen(false)}
         onConfirm={(name) => confirmRegister(selectedTournament!, null, name)}
         tournament={selectedTournament}
+      />
+
+      <PaymentSubmissionModal
+        isOpen={paymentModalOpen}
+        onClose={() => { setPaymentModalOpen(false); setPendingRegistration(null); }}
+        onConfirm={handlePaymentConfirm}
+        tournament={selectedTournament}
+        team={pendingRegistration?.team || null}
       />
     </div>
   )

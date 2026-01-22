@@ -8,6 +8,10 @@ export default function CustomCursor() {
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
+        // specific check for mobile devices to prevent any listeners
+        const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768
+        if (isMobile) return
+
         const updateCursor = (e: MouseEvent) => {
             setPosition({ x: e.clientX, y: e.clientY })
 

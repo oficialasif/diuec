@@ -16,7 +16,8 @@ import {
     Menu,
     X,
     Gamepad2,
-    Headphones
+    Headphones,
+    DollarSign
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -25,11 +26,11 @@ const navItems = [
     { href: '/diuec/dashboard/users', label: 'User Management', icon: Users },
     { href: '/diuec/dashboard/tournaments', label: 'Tournaments', icon: Trophy },
     { href: '/diuec/dashboard/teams', label: 'Teams', icon: Users },
+    { href: '/diuec/dashboard/payments', label: 'Payment Clearance', icon: DollarSign },
     { href: '/diuec/dashboard/games', label: 'Games', icon: Gamepad2 },
     { href: '/diuec/dashboard/support', label: 'Support', icon: Headphones },
     { href: '/diuec/dashboard/content', label: 'Content', icon: FileText },
     { href: '/diuec/dashboard/announcements', label: 'Announcements', icon: Bell },
-    { href: '/diuec/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function AdminSidebar() {
