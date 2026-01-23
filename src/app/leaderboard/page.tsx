@@ -3,7 +3,44 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getActiveGames, Game } from '@/lib/game-services'
-import { Trophy, Medal, Crown, Skull, ChevronDown, ChevronUp, User, Crosshair, Shield, Activity, Target, Swords, Goal } from 'lucide-react'
+import { Trophy, Medal, Crown, Skull, ChevronDown, ChevronUp, User, Crosshair, Shield, Activity, Target, Swords, Goal, Users } from 'lucide-react'
+import Image from 'next/image'
+import { getValidImageUrl } from '@/lib/utils/image'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+
+// ... (Types & Config remain the same, I will use ... to skip unchanged parts if possible, but replace_file_content replaces chunks)
+// I will assume I need to handle imports carefully. The imports are at the top. I provided replacement for top block.
+
+// Now logic updates. I'll split this into chunks if needed, or do one big chunk if contiguous. 
+// The file is ~460 lines. Logic is scattered.
+// fetchLeaderboard is at line 224.
+// Podium is at 345.
+// Modal render at end.
+// State at 197.
+
+// I will do 3 chunks.
+// Chunk 1: Imports.
+// Chunk 2: State and Fetch Logic.
+// Chunk 3: Podium Render and Modal.
+
+// Wait, replace_file_content takes StartLine/EndLine.
+// Imports are lines 1-7.
+
+// StartLine: 1, EndLine: 7
+// Replacement:
+/*
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { getActiveGames, Game } from '@/lib/game-services'
+import { Trophy, Medal, Crown, Skull, ChevronDown, ChevronUp, User, Crosshair, Shield, Activity, Target, Swords, Goal, Users } from 'lucide-react'
+import Image from 'next/image'
+import { getValidImageUrl } from '@/lib/utils/image'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/shared/ui/dialog'
+import { Badge } from '@/components/shared/ui/badge'
+*/
 
 // --- Types & Config ---
 
@@ -202,6 +239,7 @@ export default function LeaderboardPage() {
     const [leaderboardData, setLeaderboardData] = useState<any[]>([])
     const [expandedRows, setExpandedRows] = useState<number[]>([])
     const [currentConfig, setCurrentConfig] = useState<GameConfig>(DEFAULT_CONFIG)
+    const [viewTeam, setViewTeam] = useState<any | null>(null) // For Modal
 
     useEffect(() => {
         fetchGames()
@@ -243,6 +281,7 @@ export default function LeaderboardPage() {
                             id: doc.id,
                             rank: index + 1,
                             name: team.name,
+                            logo: team.logo, // Added logo
                             isTeam: true,
                             matches: team.stats?.matchesPlayed || 0,
                             wins: team.stats?.wins || 0,
@@ -344,17 +383,25 @@ export default function LeaderboardPage() {
                     {/* Top 3 Highlight */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 border-b border-zinc-800 bg-gradient-to-b from-violet-900/10 to-transparent">
                         {leaderboardData.slice(0, 3).map((item) => (
-                            <div key={item.id} className={`relative p-6 rounded-xl border ${item.rank === 1 ? 'bg-yellow-500/10 border-yellow-500/30 order-first md:order-2 scale-105' :
-                                item.rank === 2 ? 'bg-gray-400/10 border-gray-400/30 order-2 md:order-1' :
-                                    'bg-orange-700/10 border-orange-700/30 order-3'
-                                } flex flex-col items-center text-center`}>
-                                <div className="absolute -top-4">
-                                    {item.rank === 1 && <Crown className="w-8 h-8 text-yellow-500 fill-yellow-500 animate-bounce" />}
-                                    {item.rank === 2 && <Medal className="w-8 h-8 text-gray-400" />}
-                                    {item.rank === 3 && <Medal className="w-8 h-8 text-orange-700" />}
+                            <div
+                                key={item.id}
+                                onClick={() => item.isTeam && setViewTeam(item)}
+                                className={`relative p-6 rounded-xl border ${item.rank === 1 ? 'bg-yellow-500/10 border-yellow-500/30 order-first md:order-2 scale-105' :
+                                    item.rank === 2 ? 'bg-gray-400/10 border-gray-400/30 order-2 md:order-1' :
+                                        'bg-orange-700/10 border-orange-700/30 order-3'
+                                    } flex flex-col items-center text-center cursor-pointer hover:bg-zinc-800/50 transition-all`}
+                            >
+                                <div className="absolute -top-3">
+                                    {item.rank === 1 && <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-3 py-1 shadow-lg shadow-yellow-500/20 border-0">1st Place</Badge>}
+                                    {item.rank === 2 && <Badge className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-bold px-3 py-1 shadow-lg shadow-gray-500/20 border-0">2nd Place</Badge>}
+                                    {item.rank === 3 && <Badge className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-3 py-1 shadow-lg shadow-orange-500/20 border-0">3rd Place</Badge>}
                                 </div>
-                                <div className="w-16 h-16 rounded-full bg-zinc-800 mb-3 flex items-center justify-center text-xl font-bold border-2 border-dashed border-gray-700">
-                                    {item.name.charAt(0)}
+                                <div className="w-16 h-16 rounded-full bg-zinc-800 mb-3 flex items-center justify-center text-xl font-bold border-2 border-dashed border-gray-700 overflow-hidden relative">
+                                    {item.logo ? (
+                                        <Image src={getValidImageUrl(item.logo)} alt={item.name} fill className="object-cover" />
+                                    ) : (
+                                        <span className="text-gray-400">{item.name.charAt(0)}</span>
+                                    )}
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-1">{item.name}</h3>
                                 <p className="text-violet-400 font-mono text-2xl font-bold">{item.points} PTS</p>
@@ -384,8 +431,8 @@ export default function LeaderboardPage() {
                                             key={item.id}
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            onClick={() => item.isTeam && item.rank > 3 && toggleRow(item.id)}
-                                            className={`transition-colors group ${item.isTeam && item.rank > 3 ? 'cursor-pointer hover:bg-zinc-800/50' : 'hover:bg-zinc-800/20'
+                                            onClick={() => item.isTeam && toggleRow(item.id)}
+                                            className={`transition-colors group ${item.isTeam ? 'cursor-pointer hover:bg-zinc-800/50' : 'hover:bg-zinc-800/20'
                                                 } ${expandedRows.includes(item.id) ? 'bg-zinc-800/40' : ''}`}
                                         >
                                             <td className="py-4 px-6">
@@ -393,8 +440,12 @@ export default function LeaderboardPage() {
                                             </td>
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold ring-1 ring-zinc-700 group-hover:ring-violet-500 transition-all">
-                                                        {item.name.charAt(0)}
+                                                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold ring-1 ring-zinc-700 group-hover:ring-violet-500 transition-all overflow-hidden relative">
+                                                        {item.logo ? (
+                                                            <Image src={getValidImageUrl(item.logo)} alt={item.name} fill className="object-cover" />
+                                                        ) : (
+                                                            item.name.charAt(0)
+                                                        )}
                                                     </div>
                                                     <span className="font-semibold text-white group-hover:text-violet-300 transition-colors">{item.name}</span>
                                                 </div>
@@ -408,7 +459,7 @@ export default function LeaderboardPage() {
                                             ))}
 
                                             <td className="py-4 px-6 text-center text-gray-500">
-                                                {item.isTeam && item.rank > 3 && (
+                                                {item.isTeam && (
                                                     expandedRows.includes(item.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />
                                                 )}
                                             </td>
@@ -428,8 +479,12 @@ export default function LeaderboardPage() {
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                                                 {item.members.map((member: any, idx: number) => (
                                                                     <div key={idx} className="bg-black/40 rounded-lg p-3 border border-zinc-800 flex items-center gap-3">
-                                                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
-                                                                            <User size={18} className="text-gray-400" />
+                                                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center relative overflow-hidden">
+                                                                            {member.avatar ? (
+                                                                                <Image src={getValidImageUrl(member.avatar)} alt="" fill className="object-cover" />
+                                                                            ) : (
+                                                                                <User size={18} className="text-gray-400" />
+                                                                            )}
                                                                         </div>
                                                                         <div className="flex-1">
                                                                             <p className="font-semibold text-sm text-white mb-1">{member.displayName || member.name}</p>
@@ -457,6 +512,64 @@ export default function LeaderboardPage() {
                         </table>
                     </div>
                 </div>
+
+                {/* TEAM DETAILS MODAL */}
+                <Dialog open={!!viewTeam} onOpenChange={() => setViewTeam(null)}>
+                    <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-3xl">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden relative">
+                                    {viewTeam?.logo ? (
+                                        <Image src={getValidImageUrl(viewTeam.logo)} alt={viewTeam.name} fill className="object-cover" />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full w-full">{viewTeam?.name?.charAt(0)}</div>
+                                    )}
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold">{viewTeam?.name}</h2>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Badge className="bg-violet-600">Rank #{viewTeam?.rank}</Badge>
+                                        <span className="text-gray-400 text-sm">{viewTeam?.points} Points</span>
+                                    </div>
+                                </div>
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="mt-4">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Team Roster</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {viewTeam?.members?.map((member: any, idx: number) => (
+                                    <div key={idx} className="bg-black/40 rounded-lg p-4 border border-zinc-800 flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center relative overflow-hidden">
+                                            {member.avatar ? (
+                                                <Image src={getValidImageUrl(member.avatar)} alt="" fill className="object-cover" />
+                                            ) : (
+                                                <User size={20} className="text-gray-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-white">{member.displayName || member.name}</p>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                <span className="text-xs bg-zinc-800 px-2 py-0.5 rounded text-violet-300 border border-zinc-700 font-mono">{member.role}</span>
+                                                {/* Member Stats */}
+                                                {currentConfig.memberColumns.map(col => (
+                                                    <span key={col.key} className="flex items-center gap-1 text-xs text-gray-400 bg-zinc-800/50 px-2 py-0.5 rounded border border-zinc-700/50">
+                                                        <col.icon size={10} className="text-violet-400" />
+                                                        <span className="font-mono">{member[col.key] || 0}</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!viewTeam?.members || viewTeam.members.length === 0) && (
+                                    <div className="col-span-2 text-center py-8 text-gray-500 italic">
+                                        No members found.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
             </div>
         </div>
