@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { doc, getDoc, collection, query, where, orderBy, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { updateMatchSchedule, generateKnockoutBracket, getTournament, approveMatchResult } from '@/lib/services'
+import { generateKnockoutBracket, getTournament, approveMatchResult } from '@/lib/services'
+import { updateMatchSchedule } from '@/lib/services/match-services'
 import { Button } from '@/components/shared/ui/button'
 import { Input } from '@/components/shared/ui/input'
 import { ArrowLeft, Save, Calendar, Clock, X, RefreshCw, Eye, List, Trophy, CheckCircle2, Loader2, Check } from 'lucide-react'
@@ -27,6 +28,8 @@ export default function BracketManagePage() {
     const [editingMatch, setEditingMatch] = useState<string | null>(null)
     const [scheduleDate, setScheduleDate] = useState('')
     const [scheduleTime, setScheduleTime] = useState('')
+    const [scheduleMap, setScheduleMap] = useState('')
+    const [scheduleGroup, setScheduleGroup] = useState('')
     const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual')
 
     const [brEditorOpen, setBrEditorOpen] = useState(false)
@@ -87,6 +90,8 @@ export default function BracketManagePage() {
             setScheduleDate('')
             setScheduleTime('')
         }
+        setScheduleMap(match.map || '')
+        setScheduleGroup(match.group || '')
     }
 
     const handleSaveSchedule = async (matchId: string) => {
@@ -98,7 +103,7 @@ export default function BracketManagePage() {
         const dateTime = new Date(`${scheduleDate}T${scheduleTime}`)
 
         try {
-            await updateMatchSchedule(matchId, dateTime)
+            await updateMatchSchedule(matchId, dateTime, scheduleMap, scheduleGroup)
             toast.success('Schedule updated')
             setEditingMatch(null)
             fetchData() // Refresh
@@ -171,14 +176,16 @@ export default function BracketManagePage() {
                         </div>
                     )}
 
-                    <Button
-                        onClick={handleGenerate}
-                        disabled={generating}
-                        className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                        {generating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                        {matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}
-                    </Button>
+                    {tournament.type !== 'BATTLE_ROYALE' && (
+                        <Button
+                            onClick={handleGenerate}
+                            disabled={generating}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            {generating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                            {matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -259,6 +266,21 @@ export default function BracketManagePage() {
                                                         onChange={(e) => setScheduleTime(e.target.value)}
                                                         className="w-24 bg-zinc-900 border-zinc-700 h-8 text-xs"
                                                     />
+                                                    <Input
+                                                        placeholder="Map"
+                                                        value={scheduleMap}
+                                                        onChange={(e) => setScheduleMap(e.target.value)}
+                                                        className="w-20 bg-zinc-900 border-zinc-700 h-8 text-xs"
+                                                    />
+                                                    {match.type === 'BATTLE_ROYALE' && (
+                                                        <Input
+                                                            placeholder="Grp"
+                                                            value={scheduleGroup}
+                                                            onChange={(e) => setScheduleGroup(e.target.value)}
+                                                            className="w-12 bg-zinc-900 border-zinc-700 h-8 text-xs text-center"
+                                                            title="Group (A, B, Finals)"
+                                                        />
+                                                    )}
                                                     <Button size="sm" onClick={() => handleSaveSchedule(match.id)} className="h-8 bg-green-600 hover:bg-green-700">
                                                         <Save className="w-3 h-3" />
                                                     </Button>

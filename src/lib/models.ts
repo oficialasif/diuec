@@ -113,7 +113,9 @@ export interface Match {
   round: number // 1 = Ro16, 2 = QF, etc.
   matchNumber: number // 1 to N
   group?: string // For Group Stage Matches (A, B, C...)
-  status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'DISPUTE'
+  status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'DISPUTE' | 'scheduled' | 'ongoing' | 'completed' | 'submitted' | 'approved'
+  scheduledAt?: Date
+  map?: string
 
   // ELIMINATION (1v1)
   teamA?: {

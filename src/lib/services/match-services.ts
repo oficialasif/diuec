@@ -400,13 +400,17 @@ export async function getMatchesByTournament(tournamentId: string): Promise<Matc
     }
 }
 
-export const updateMatchSchedule = async (matchId: string, scheduledAt: Date) => {
+export const updateMatchSchedule = async (matchId: string, scheduledAt: Date, map?: string, group?: string) => {
     try {
         const matchRef = doc(db, 'matches_detailed', matchId)
-        await updateDoc(matchRef, {
+        const updateData: any = {
             scheduledAt: scheduledAt,
             updatedAt: new Date()
-        })
+        }
+        if (map !== undefined) updateData.map = map
+        if (group !== undefined) updateData.group = group
+
+        await updateDoc(matchRef, updateData)
         return { success: true }
     } catch (error) {
         console.error('Error updating match schedule:', error)

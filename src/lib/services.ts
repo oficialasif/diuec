@@ -698,10 +698,11 @@ export async function updateMatchResult(matchId: string, scoreA: number, scoreB:
   })
 }
 
-export async function updateMatchSchedule(matchId: string, scheduledAt: Date) {
+export async function updateMatchSchedule(matchId: string, scheduledAt: Date, map?: string) {
   const matchRef = doc(db, 'matches_detailed', matchId)
   await updateDoc(matchRef, {
     scheduledAt: scheduledAt,
+    ...(map && { map }),
     status: 'scheduled'
   })
 }

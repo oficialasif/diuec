@@ -22,6 +22,7 @@ import { TournamentDetailsModal } from '@/components/tournaments/TournamentDetai
 import { SymmetricBracket } from '@/components/tournaments/SymmetricBracket'
 import { PaymentSubmissionModal } from '@/components/tournaments/PaymentSubmissionModal'
 import { ResultSubmissionModal } from '@/components/tournaments/ResultSubmissionModal'
+import { BattleRoyaleView } from '@/components/tournaments/BattleRoyaleView'
 
 export default function TournamentsPage() {
   const { user } = useAuth()
@@ -53,7 +54,7 @@ export default function TournamentsPage() {
   // Correction: User said "click tournament card to pop up a window where showing all details".
   // This implies the Browse view cards open the Details Modal.
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'matches' | 'groups' | 'bracket'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'leaderboard' | 'matches' | 'groups' | 'bracket' | 'schedule' | 'rules' | 'rank'>('overview')
 
   const fetchTournaments = useCallback(async () => {
     try {
@@ -414,24 +415,50 @@ export default function TournamentsPage() {
                     >
                       Groups
                     </button>
-                    <button
-                      onClick={() => setActiveTab('leaderboard')}
-                      className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'leaderboard' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
-                    >
-                      Leaderboard
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('matches')}
-                      className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'matches' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
-                    >
-                      Matches
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('bracket')}
-                      className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'bracket' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
-                    >
-                      Bracket
-                    </button>
+
+                    {selectedTournament.type === 'BATTLE_ROYALE' ? (
+                      <>
+                        <button
+                          onClick={() => setActiveTab('schedule')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'schedule' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Schedule
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('rules')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'rules' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Rules
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('rank')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'rank' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Rank
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setActiveTab('leaderboard')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'leaderboard' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Leaderboard
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('matches')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'matches' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Matches
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('bracket')}
+                          className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'bracket' ? 'border-violet-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                          Bracket
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -484,6 +511,10 @@ export default function TournamentsPage() {
                       </div>
                     )}
 
+                    {['schedule', 'rules', 'rank'].includes(activeTab) && (
+                      <BattleRoyaleContainer tournament={selectedTournament} activeTab={activeTab as 'schedule' | 'rules' | 'rank'} />
+                    )}
+
                     {activeTab === 'leaderboard' && (
                       <Leaderboard tournamentId={selectedTournament.id} game={selectedTournament.game as any} />
                     )}
@@ -491,7 +522,7 @@ export default function TournamentsPage() {
                     {/* Duplicate GroupsDisplay Removed */}
 
                     {activeTab === 'matches' && (
-                      <MatchesList tournamentId={selectedTournament.id} />
+                      <MatchesList tournamentId={selectedTournament.id} userTeams={userTeams} />
                     )}
                   </div>
                 </div>
@@ -541,7 +572,8 @@ export default function TournamentsPage() {
   )
 }
 
-function MatchesList({ tournamentId }: { tournamentId: string }) {
+// Update Props
+function MatchesList({ tournamentId, userTeams }: { tournamentId: string, userTeams: Team[] }) {
   const { user } = useAuth()
   const [matches, setMatches] = useState<any[]>([]) // MatchDetailed[]
   const [loading, setLoading] = useState(true)
@@ -587,8 +619,27 @@ function MatchesList({ tournamentId }: { tournamentId: string }) {
   return (
     <div className="space-y-4">
       {matches.map((match) => {
-        const isParticipant = user && (match.teamA?.captainId === user.uid || match.teamB?.captainId === user.uid || match.teamA?.id === user.uid || match.teamB?.id === user.uid);
-        const canSubmit = isParticipant && (match.status === 'scheduled' || match.status === 'disputed');
+        // Logic:
+        // 1v1: Captain of A or B, or Direct User A or B
+        // BR: Captain of ANY team in participants list (which are teamIds)
+
+        let canSubmit = false
+
+        if (match.type === 'BATTLE_ROYALE') {
+          // match.participants is array of TeamIDs (or UserIDs for solo)
+          // Check if any of my captain-teams is in this list
+          // OR if I am a solo participant (userId in list)
+          const myCaptainTeamIds = userTeams.map(t => t.id)
+          const isTeamCaptain = match.participants?.some((pId: string) => myCaptainTeamIds.includes(pId))
+          const isSoloParticipant = match.participants?.includes(user?.uid)
+
+          canSubmit = !!(isTeamCaptain || isSoloParticipant)
+        } else {
+          canSubmit = !!(user && (match.teamA?.captainId === user.uid || match.teamB?.captainId === user.uid || match.teamA?.id === user.uid || match.teamB?.id === user.uid))
+        }
+
+        // Also check status
+        canSubmit = canSubmit && (match.status === 'scheduled' || match.status === 'disputed')
 
         return (
           <div key={match.id} className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -720,4 +771,28 @@ function BracketView({ tournamentId }: { tournamentId: string }) {
       <SymmetricBracket matches={matches} />
     </div>
   )
+}
+
+function BattleRoyaleContainer({ tournament, activeTab }: { tournament: Tournament, activeTab: 'schedule' | 'rules' | 'rank' }) {
+  const [matches, setMatches] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const { getMatchesByTournament } = await import('@/lib/services/match-services')
+        const data = await getMatchesByTournament(tournament.id)
+        setMatches(data)
+      } catch (error) {
+        console.error("Failed to load BR matches", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMatches()
+  }, [tournament.id])
+
+  if (loading) return <div className="text-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-violet-500 mx-auto"></div></div>
+
+  return <BattleRoyaleView tournament={tournament} matches={matches} activeTab={activeTab} />
 }

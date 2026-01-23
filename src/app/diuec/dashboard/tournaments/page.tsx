@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { getAllTournamentsAdmin, deleteTournament } from '@/lib/admin-services'
 import { getTournaments } from '@/lib/services'
 import { Button } from '@/components/shared/ui/button'
-import { Plus, Edit, Trash2, Eye, Users, Swords, Gamepad2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Users, Swords, Gamepad2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/auth-context'
@@ -128,23 +128,25 @@ export default function TournamentsPage() {
                                         Manage Groups
                                     </Button>
                                 </Link>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/10"
-                                    onClick={() => handleGenerateBracket(tournament.id)}
-                                >
-                                    <Gamepad2 className="w-4 h-4 mr-1" />
-                                    Generate Bracket
-                                </Button>
+                                {tournament.type !== 'BATTLE_ROYALE' && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/10"
+                                        onClick={() => handleGenerateBracket(tournament.id)}
+                                    >
+                                        <Gamepad2 className="w-4 h-4 mr-1" />
+                                        Generate Bracket
+                                    </Button>
+                                )}
                             </div>
 
                             {/* Secondary Actions */}
                             <div className="grid grid-cols-3 gap-2">
                                 <Link href={`/diuec/dashboard/tournaments/${tournament.id}/brackets`}>
                                     <Button variant="ghost" size="sm" className="w-full h-auto py-2 flex flex-col items-center gap-1">
-                                        <Swords className="w-4 h-4" />
-                                        <span className="text-xs">Brackets</span>
+                                        {tournament.type === 'BATTLE_ROYALE' ? <Trophy className="w-4 h-4" /> : <Swords className="w-4 h-4" />}
+                                        <span className="text-xs">{tournament.type === 'BATTLE_ROYALE' ? 'Matches' : 'Brackets'}</span>
                                     </Button>
                                 </Link>
                                 <Link href={`/diuec/dashboard/tournaments/${tournament.id}`}>

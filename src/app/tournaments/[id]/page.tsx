@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { getTournament, getTournamentMatches, registerForTournament, getMyTeams, generateBracket, updateMatchResult } from '@/lib/services'
+import { SymmetricBracket } from '@/components/tournaments/SymmetricBracket'
+import { BattleRoyaleView } from '@/components/tournaments/BattleRoyaleView'
 import { Tournament, Match, Team } from '@/lib/models'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/shared/ui/button'
@@ -172,9 +174,11 @@ export default function TournamentDetailsPage() {
                         ) : (
                             /* Bracket Visualizer */
                             <div className="space-y-4">
-                                {matches.length === 0 ? (
+                                {tournament.type === 'BATTLE_ROYALE' ? (
+                                    <BattleRoyaleView tournament={tournament} matches={matches} />
+                                ) : matches.length === 0 ? (
                                     <p>No matches generated yet.</p>
-                                ) : tournament.type === 'ELIMINATION' ? (
+                                ) : (tournament.type === 'ELIMINATION' || tournament.type === 'GROUP_KNOCKOUT') ? (
                                     <div className="grid gap-4">
                                         {matches.map(match => (
                                             <div key={match.id} className="relative bg-black p-4 rounded border border-zinc-800 flex justify-between items-center group">
@@ -211,18 +215,7 @@ export default function TournamentDetailsPage() {
                                             </div>
                                         ))}
                                     </div>
-                                ) : (
-                                    /* Battle Royale Lobby View */
-                                    <div className="text-center">
-                                        <h3 className="text-xl font-bold mb-4">Lobby Stats</h3>
-                                        <p className="text-gray-400">Battle Royale Leaderboard implementation coming soon.</p>
-                                        <div className="grid grid-cols-1 gap-2 mt-4">
-                                            {matches[0]?.participants?.map(p => (
-                                                <div key={p} className="p-3 bg-zinc-800 rounded">Team ID: {p}</div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
+                                ) : null}
                             </div>
                         )}
                     </div>
